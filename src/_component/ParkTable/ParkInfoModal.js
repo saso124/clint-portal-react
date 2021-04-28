@@ -156,7 +156,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
             <Tab label="Park Photos" id="full-width-tab-1" aria-controls="full-width-tabpanel-1" />
           </Tabs>
         </AppBar>
-        <TabPanel value='0' hidden={(value==0) ? false : true}>
+        <TabPanel value='0' hidden={(value==0) ? false : true} className={classes.panelgroup}>
           <div className={classes.newCardRoot}>
           <Formik
             enableReinitialize={true}
