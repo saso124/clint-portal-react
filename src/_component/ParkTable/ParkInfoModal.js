@@ -76,6 +76,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
   const [photoItem, setPhotoItem] = useState({})
   const [border, setBorder] = useState(0);
 
+
   useEffect(() => {
     if (!isNew) setParkInfo(parkData)
   }, [parkData, isNew])
@@ -83,7 +84,36 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
   const handleClose = () => {
     setParkInfo({})
     onClose()
+    setValue(0)
   }
+  const addImage = () => {
+    var currentImg = document.querySelector('#file');
+    var otherImg = currentImg.cloneNode(true);
+    
+    var filediv = document.querySelector('#fileDiv');
+    console.log(filediv);
+    filediv.appendChild(otherImg);
+    
+  }
+  const submitImage = () =>{
+    var formData = new FormData();
+    var imagefile = document.querySelector('#file');
+    console.log(imagefile.files);
+    formData.append("image", imagefile.files);
+    
+    //file_url : GET_SAVE_PHOTO_URL
+    axios
+    .post('', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }}
+    )
+    .then(() => console.log('SUCCESS fileUpload'))
+    .catch(err => {
+        console.error(err);
+      })
+  }
+
   const handleChangeValue = event => {
     
     event.preventDefault()
@@ -411,37 +441,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
         </TabPanel>
         <TabPanel value='1' hidden={(value==1) ? false : true}>
         <div className={classes.newCardRoot}>
-        <Formik
-            enableReinitialize={true}
-          
-            onSubmit={(values, { setSubmitting }) => {
-              
-              axios
-                  .post(GET_SAVE_PHOTO_URL, photoItem)
-                  .then(() => console.log('success PHOTO submited'))
-                  .catch(err => {
-                    console.error(err);
-                  });
-              console.log(photoItem);
-
-            }}
-          >
-            {({
-              values,
-              errors,
-              touched,
-              handleChange,
-              handleBlur,
-              handleSubmit,
-              setFieldTouched,
-              setFieldValue,
-              isSubmitting,
-            }) => {
-              
-              return (
-                <form className={classes.root} onSubmit={handleSubmit}>
-                    
-                      <div className={classes.cardgroup}>
+        <div className={classes.cardgroup}>
                         
                         {parkInfo.photos?.map(item => (
                           <Card  onClick={(e)=>{setPhotoItem(item)}} 
@@ -460,23 +460,32 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                           </Card>
                         ))}
                       </div>
-                      <div className={classes.photobuttons}>
-                    
-                      <Button
-                        variant="contained"
-                        component="label"
-                        color="primary"
-                      >
-                        Upload File
-                        <input
+                      <div className={classes.photodiv} id="fileDiv">
+                      <input
                           type="file"
-                          hidden
-                        />
+                          id='file'
+                          color="primary"
+                          // multiple
+                          className = {classes.photosubmit}
+                      />
+                      </div>
+                    <div className={classes.photobuttons}>
+                      
+                      
+                      <Button
+                            type="button"
+                            color="primary"
+                            variant="outlined"
+                            onClick={submitImage}
+                            className={classes.photosubmit}
+                          >
+                        SUBMIT
                       </Button>
                       <Button
                             type="button"
                             color="primary"
                             variant="outlined"
+                            onClick={addImage}
                             className={classes.photosubmit}
                           >
                         ADD
@@ -491,10 +500,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                         DELETE
                       </Button>
                       </div>
-                  </form>
-              )
-            }}
-          </Formik>
+        
         </div>
         </TabPanel>
       </Dialog>
@@ -565,12 +571,13 @@ const useStyles = makeStyles(theme => ({
   },
   photobuttons : {
     
-    width:'30%',
-    margin:'30px auto', 
+    width:'40%',
+    margin:'1em auto', 
     position:'fixed',
     bottom:'0',
-    right:'35%',
-    left:'35%',
+    padding:'0.5em',
+    right:'15%',
+    left:'15%',
 
   }
 }))

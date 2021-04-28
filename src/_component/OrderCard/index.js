@@ -89,7 +89,7 @@ const OrderCard = props => {
     const {dashboardData,fetchDashboardByUser} = useDashboardInfoByUser(currentUser.uid);
   return (
     <Card {...props} className={classes.root} variant="outlined">
-      <CardHeader title="Most popular parks" />
+      <CardHeader title={props.title} />
       <Divider />
       {/* <CardHeader title="Park name" /> */}
       <Box sx={{ minWidth: 800 }}>

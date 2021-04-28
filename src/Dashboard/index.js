@@ -8,6 +8,7 @@ import PriceCard from '../_component/PriceCard'
 import OrderCard from '../_component/OrderCard'
 import { AuthContext} from "_provider/AuthProvider";
 import {useDashboardInfoByUser} from '_hooks/useDashboardInfoByUser'
+import { PinDropSharp } from '@material-ui/icons';
 
 const Parks = () => {
   const classes = useStyles();
@@ -27,7 +28,7 @@ const Parks = () => {
                 <div className={classes.cardRoot1}>
                   <span className={classes.text1}>Your parks have</span>
                   <span className={classes.text2}>{dashboardData?.monthlyClicks}</span>
-                  <span className={classes.text1}>monthly clicks</span>
+                  <span className={classes.textBottom}>monthly clicks</span>
                 </div>
               </PriceCard>              
             </Grid>
@@ -35,8 +36,8 @@ const Parks = () => {
               <PriceCard>
                 <div className={classes.cardRoot1}>
                   <span className={classes.text1}>Age range of users</span>
-                        {dashboardData.topAgeRangeUseage?.map(item => (
-                    <span className={classes.text1} style={{alignSelf:'center'}}>{item}</span>
+                        {dashboardData.topAgeRangeUseage?.map((item,i) => (
+                    <span className={classes.text1} style={{alignSelf:'center'}} key={i}>{item}</span>
                   ))}
                 </div>
               </PriceCard>              
@@ -45,8 +46,8 @@ const Parks = () => {
               <PriceCard>
                 <div className={classes.cardRoot1}>
                   <span className={classes.text1}>Most used search terms</span>
-                  {dashboardData.mostSearchedTerms?.map(item => (
-                    <span className={classes.text1} style={{alignSelf:'center'}}>{item}</span>
+                  {dashboardData.mostSearchedTerms?.map((item,i) => (
+                    <span className={classes.text1} style={{alignSelf:'center'}} key={i}>{item}</span>
                   ))}
                 </div>
               </PriceCard>              
@@ -56,10 +57,10 @@ const Parks = () => {
         <Grid item xs={12}>
           <Grid container className={classes.container} spacing={2}>
             <Grid item>
-              <OrderCard/>
+              <OrderCard title="Most popular parks" key="1"/>
             </Grid>
             <Grid item>
-              <OrderCard/>
+              <OrderCard title="Most checked in Parks" key="2"/>
             </Grid>
           </Grid>
         </Grid>
@@ -82,16 +83,27 @@ const useStyles = makeStyles(theme => ({
   text2:{
     fontSize:'3em',
     fontFamily:'inhreit',
+    minHeight:'50%',
     fontWeight:'900',
     color: 'black',
     alignSelf:'left',
     letterSpacing:'0.2em'
   },
+  textBottom:{
+    fontSize: '20px',
+    //position:'absolute',
+   // bottom:'0',
+    fontFamily:'fangsong',
+    fontWeight: '500',
+    color: '#666',
+  },
   cardRoot1:{
     display: 'flex',
     flexDirection: 'column',
+    flexFlow:'colum wrap',
     alignItems: 'flex-start',
     height: '100%',
+    //display:'relative',
     marginTop:30
   }
 }))
