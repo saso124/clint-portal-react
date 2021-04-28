@@ -10,6 +10,11 @@ import {
   Grid,
   TextField,
   Slide,
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+  CardActions
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 
@@ -22,6 +27,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const ParkInfoModal = ({ selectedPark, onClose, open, isNew }) => {
   const classes = useStyles()
   const [parkInfo, setParkInfo] = useState({})
+  const[hiddenValue,sethiddenValue] = useState(0);
   useEffect(() => {
     console.log(selectedPark);
     if (isNew) setParkInfo({})
@@ -57,7 +63,11 @@ const ParkInfoModal = ({ selectedPark, onClose, open, isNew }) => {
           </Button>
         </Toolbar>
       </AppBar>
-      <div className={classes.newCardRoot}>
+      <div className={classes.tabbar}>
+          <Button color="inhreit" onClick={event=>sethiddenValue(0)}>MAIN INFO</Button>
+          <Button color="inhreit" onClick={event=>sethiddenValue(1)}>PARK PHOTOS</Button>
+      </div>
+      <div className={classes.newCardRoot} hidden={hiddenValue}>
         <form className={classes.root} noValidate autoComplete="off">
           <Grid container spacing={CELL_SPACING}>
             <Grid item xs={6} className={classes.newCardCell}>
@@ -214,6 +224,40 @@ const ParkInfoModal = ({ selectedPark, onClose, open, isNew }) => {
           </Grid>
         </form>
       </div>
+      <div className={classes.newCardRoot} hidden={(hiddenValue==1)?true:false}>
+          <div className={classes.cardgroup}>
+            {parkInfo.photos?.map(item => (
+    
+              <Card className={classes.cards} key={item.id}>
+              <CardActionArea>
+                <CardMedia
+                  component="img"
+                  alt="Contemplative Reptile"
+                  height="140"
+                  image={item.photoUrl}
+                  title={item.cardName}
+                />
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="h2">
+                    
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" component="p">
+                    {item.cardId}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+              <CardActions>
+                <Button size="small" color="primary">
+                  
+                </Button>
+                <Button size="small" color="primary">
+                  
+                </Button>
+              </CardActions>
+            </Card>
+            ))}
+          </div>  
+      </div>
     </Dialog>
   )
 }
@@ -229,6 +273,7 @@ const useStyles = makeStyles(theme => ({
   newCardRoot: {
     flexGrow: 1,
     margin: 30,
+    border:'1px solid black'
   },
   newCardCell: {
     display: 'flex',
@@ -241,6 +286,15 @@ const useStyles = makeStyles(theme => ({
   },
   newCardText: {
     width: '100%',
+  },
+  tabbar:{
+    width:'100%',
+    padding:'1em'
+  },
+  cardgroup:{
+    width:'100%',
+    display:'flex',
+    justifyContent:'flexStart'
   },
 }))
 
