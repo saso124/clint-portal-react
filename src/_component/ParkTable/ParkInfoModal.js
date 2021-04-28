@@ -543,7 +543,8 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'flex-end',
   },
   photosubmit: {
-    float:'right'
+    textAlign:'center',
+    marginLeft:'1em'
   },
   cardAction : {
     border:'5px solid white',
