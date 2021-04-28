@@ -1,4 +1,4 @@
-import React, { Component,useContext} from 'react'
+import React, { Component, useContext } from 'react'
 import moment from 'moment'
 import { v4 as uuid } from 'uuid'
 import {
@@ -15,11 +15,11 @@ import {
   TableRow,
   TableSortLabel,
   Tooltip,
-  makeStyles
+  makeStyles,
 } from '@material-ui/core'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
-import {useDashboardInfoByUser} from '_hooks/useDashboardInfoByUser'
-import { AuthContext} from "_provider/AuthProvider"
+import { useDashboardInfoByUser } from '_hooks/useDashboardInfoByUser'
+import { AuthContext } from '_provider/AuthProvider'
 const orders = [
   {
     id: uuid(),
@@ -84,12 +84,12 @@ const orders = [
 ]
 
 const OrderCard = props => {
-    const classes = useStyles();
-    const { currentUser } = useContext(AuthContext);
-    const {dashboardData,fetchDashboardByUser} = useDashboardInfoByUser(currentUser.uid);
+  const classes = useStyles()
+  const { currentUser } = useContext(AuthContext)
+  const { dashboardData, fetchDashboardByUser } = useDashboardInfoByUser(currentUser.uid)
   return (
     <Card {...props} className={classes.root} variant="outlined">
-      <CardHeader title="Most popular parks" />
+      <CardHeader title={props.title} />
       <Divider />
       {/* <CardHeader title="Park name" /> */}
       <Box sx={{ minWidth: 800 }}>
@@ -100,10 +100,13 @@ const OrderCard = props => {
             </TableRow>
           </TableHead>
           <TableBody>
-                {dashboardData.popularParks?.map(item => (
-                    <TableRow><TableCell className={classes.text1} style={{alignSelf:'center'}}>{item}</TableCell></TableRow>
-                  ))}
-                
+            {dashboardData.popularParks?.map(item => (
+              <TableRow>
+                <TableCell className={classes.text1} style={{ alignSelf: 'center' }}>
+                  {item}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </Box>
@@ -115,10 +118,10 @@ const useStyles = makeStyles(theme => ({
     width: 368,
     borderRadius: 0,
   },
-  thead:{
-    fontFamily:'san-serif',
-    textAlign:'center',
-    fontSize:'1.25em'
-  }
+  thead: {
+    fontFamily: 'san-serif',
+    textAlign: 'center',
+    fontSize: '1.25em',
+  },
 }))
 export default OrderCard
