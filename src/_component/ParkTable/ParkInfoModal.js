@@ -460,6 +460,8 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                           </Card>
                         ))}
                       </div>
+                      <div className={classes.photobuttons}>
+                    
                       <Button
                         variant="contained"
                         component="label"
@@ -488,6 +490,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                           >
                         DELETE
                       </Button>
+                      </div>
                   </form>
               )
             }}
@@ -559,6 +562,16 @@ const useStyles = makeStyles(theme => ({
   cardAction : {
     border:'5px solid white',
     outline:'5px solid grey',
+  },
+  photobuttons : {
+    
+    width:'30%',
+    margin:'30px auto', 
+    position:'fixed',
+    bottom:'0',
+    right:'35%',
+    left:'35%',
+
   }
 }))
 
