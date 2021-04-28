@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component,useContext} from 'react'
 import moment from 'moment'
 import { v4 as uuid } from 'uuid'
 import {
@@ -18,7 +18,8 @@ import {
   makeStyles
 } from '@material-ui/core'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
-
+import {useDashboardInfoByUser} from '_hooks/useDashboardInfoByUser'
+import { AuthContext} from "_provider/AuthProvider"
 const orders = [
   {
     id: uuid(),
@@ -84,35 +85,25 @@ const orders = [
 
 const OrderCard = props => {
     const classes = useStyles();
+    const { currentUser } = useContext(AuthContext);
+    const {dashboardData,fetchDashboardByUser} = useDashboardInfoByUser(currentUser.uid);
   return (
     <Card {...props} className={classes.root} variant="outlined">
-      <CardHeader title="Latest" />
+      <CardHeader title="Most popular parks" />
       <Divider />
+      {/* <CardHeader title="Park name" /> */}
       <Box sx={{ minWidth: 800 }}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell sortDirection="desc">
-                <Tooltip enterDelay={300} title="Sort">
-                  <TableSortLabel active direction="desc">
-                    Date
-                  </TableSortLabel>
-                </Tooltip>
-              </TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell ClassName={classes.thead}>Park name</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {orders.map(order => (
-              <TableRow hover key={order.id}>
-                <TableCell>{order.ref}</TableCell>
-                <TableCell>{moment(order.createdAt).format('DD/MM/YYYY')}</TableCell>
-                <TableCell>
-                  <Chip color="primary" label={order.status} size="small" />
-                </TableCell>
-              </TableRow>
-            ))}
+                {dashboardData.popularParks?.map(item => (
+                    <TableRow><TableCell className={classes.text1} style={{alignSelf:'center'}}>{item}</TableCell></TableRow>
+                  ))}
+                
           </TableBody>
         </Table>
       </Box>
@@ -124,5 +115,10 @@ const useStyles = makeStyles(theme => ({
     width: 368,
     borderRadius: 0,
   },
+  thead:{
+    fontFamily:'san-serif',
+    textAlign:'center',
+    fontSize:'1.25em'
+  }
 }))
 export default OrderCard

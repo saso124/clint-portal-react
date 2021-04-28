@@ -67,6 +67,7 @@ const ParkTable = props => {
   const { currentUser } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const [selectedItem,setSelectedItem] = useState({});
+  const [itemId, setitemId] = useState(0);
   const [isNew,setIsNew] = useState(false);
 
   console.log('user id',currentUser.uid)
@@ -85,12 +86,15 @@ const ParkTable = props => {
   const handleClose = () => {
     setOpen(false);
   };
-
+  
   const handleRowClick = (params,event) =>{
-    console.log('handleRowClick',params);
+    //console.log('handleRowClick',params);
+    // console.log('this_params.id = ',params.id);
     setSelectedItem(params.row);
     setIsNew(false);
     setOpen(true);
+    setitemId(params.id);
+    
   }
 
   return (
@@ -120,6 +124,8 @@ const ParkTable = props => {
         open={open}
         onClose={handleClose}
         isNew={isNew}
+        itemId={itemId}
+        
       />
     </>
   )

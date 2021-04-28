@@ -26,7 +26,7 @@ const Parks = () => {
               <PriceCard>
                 <div className={classes.cardRoot1}>
                   <span className={classes.text1}>Your parks have</span>
-                  <span className={classes.text1}>{dashboardData?.monthlyClicks}</span>
+                  <span className={classes.text2}>{dashboardData?.monthlyClicks}</span>
                   <span className={classes.text1}>monthly clicks</span>
                 </div>
               </PriceCard>              
@@ -35,8 +35,8 @@ const Parks = () => {
               <PriceCard>
                 <div className={classes.cardRoot1}>
                   <span className={classes.text1}>Age range of users</span>
-                  {dashboardData.topAgeRangeUseage?.map(item => (
-                    <span className={classes.text1} style={{paddingLeft:20}}>{item}</span>
+                        {dashboardData.topAgeRangeUseage?.map(item => (
+                    <span className={classes.text1} style={{alignSelf:'center'}}>{item}</span>
                   ))}
                 </div>
               </PriceCard>              
@@ -46,7 +46,7 @@ const Parks = () => {
                 <div className={classes.cardRoot1}>
                   <span className={classes.text1}>Most used search terms</span>
                   {dashboardData.mostSearchedTerms?.map(item => (
-                    <span className={classes.text1} style={{paddingLeft:20}}>{item}</span>
+                    <span className={classes.text1} style={{alignSelf:'center'}}>{item}</span>
                   ))}
                 </div>
               </PriceCard>              
@@ -74,9 +74,18 @@ const useStyles = makeStyles(theme => ({
   },
   text1:{
     fontSize: '20px',
+    fontFamily:'fangsong',
     fontWeight: '500',
     color: '#666',
     height:'30%'
+  },
+  text2:{
+    fontSize:'3em',
+    fontFamily:'inhreit',
+    fontWeight:'900',
+    color: 'black',
+    alignSelf:'left',
+    letterSpacing:'0.2em'
   },
   cardRoot1:{
     display: 'flex',
