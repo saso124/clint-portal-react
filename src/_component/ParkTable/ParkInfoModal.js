@@ -11,6 +11,9 @@ import {
   TextField,
   Slide,
   Tab,
+  // TabContext,
+  // TabList,
+  // TabPanel,
   Tabs,
   Card,
   CardActionArea,
@@ -18,137 +21,102 @@ import {
   CardContent,
   CardMedia
 } from '@material-ui/core'
+
+import TabContext from '@material-ui/lab/TabContext'
+import TabList from '@material-ui/lab/TabList'
+import TabPanel from '@material-ui/lab/TabPanel'
+
 import CloseIcon from '@material-ui/icons/Close'
 import {useGetParkById} from '_hooks/useGetParkById'
-import Box from '@material-ui/core/Box'
-import PropTypes from 'prop-types'
-import {GET_SAVE_PARK_URL} from '../../_hooks/constants';
+// import {GET_SAVE_PARK_URL} from '../../_hooks/constants';
 
 const CELL_SPACING = 5;
-
+// const classes = useStyles()
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />
 })
+// Panel configration
+  
+// function TabPanel(props) {
+//   const { children, value, index, ...other } = props;
+//   const classes = useStyles()
+//   return (
+//     <div
+//       role="tabpanel"
+//       hidden={value !== index}
+//       id={`simple-tabpanel-${index}`}
+//       aria-labelledby={`simple-tab-${index}`}
+//       className={classes.panelgroup}
+//       {...other}
+//     >
+//       {value === index && (
+        
+//           <div>{children}</div>
+//       )}
+//     </div>
+//   );
+// }
 
-const ParkInfoModal = ({ onClose, open, isNew, itemId}) => {
-  // Panel configration
-  
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-  
+// function a11yProps(index) {
+//   const [value, setValue] = useState(0);
+//   return {
+//     id: `full-width-tab-${index}`,
+//     'aria-controls': `full-width-tabpanel-${index}`,
+//   };
+// }
+// const [value, setValue] = useState(0);
+
+// const handleChange = (event, newValue) => {
+//   setValue(newValue);
+//   console.log('newValue',newValue);
+// };
+function LabTabs() {
+  const classes = useStyles();
+  const [value, setValue] = React.useState('1');
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      className={classes.panelgroup}
-      {...other}
-    >
-      {value === index && (
-        <Box div={2}>
-          <div>{children}</div>
-        </Box>
-      )}
+    <div className={classes.root}>
+      <TabContext value={value}>
+        <AppBar position="static">
+          <TabList onChange={handleChange} aria-label="simple tabs example">
+            <Tab label="Item One" value="1" />
+            <Tab label="Item Two" value="2" />
+          </TabList>
+        </AppBar>
+        <TabPanel value="1">
+          <EditForm/>
+        </TabPanel>
+        <TabPanel value="2">Item Two</TabPanel>
+      </TabContext>
     </div>
   );
 }
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired,
-};
-
-function a11yProps(index) {
-  return {
-    id: `full-width-tab-${index}`,
-    'aria-controls': `full-width-tabpanel-${index}`,
-  };
-}
-const [value, setValue] = useState(0);
-
-const handleChange = (event, newValue) => {
-  setValue(newValue);
-};
-
-// End of panel configration
-  const classes = useStyles()
-  const [parkInfo, setParkInfo] = useState({})
- 
-  const {parkData,fetchParkDataById} = useGetParkById(itemId);
-  const [photoItem, setPhotoItem] = useState({});
-
-  useEffect(() => {
-    //console.log(selectedPark);
-    if (!isNew) 
-      setParkInfo(parkData)
-  }, [parkData, isNew]);
-
-  useEffect(()=>{
-    if(!isNew)
-      fetchParkDataById();
-  },[itemId])
-
-  const handleClose = () => {
-    setParkInfo({});
-    onClose()
-  }
-  const handleChangeValue = event => {
-    //console.log('handleChangeValue', event.target.value);
-    const tempParkInfo = { ...parkInfo, [event.target.id]: event.target.value }
-    setParkInfo(tempParkInfo)
-  }
+const EditForm = (props) =>{
+  console.log(props);
+  const classes = useStyles();
   const onSubmit = () =>{
     console.log('submit');
 
   }
+  const [parkInfo, setParkInfo] = useState({})
   const formsubmit = (event) =>{
     event.preventDefault();
-    const target = event.target;
-    console.log(target.value);
-    console.log(target.id);
+    const tempParkInfo = { ...props.parkInfo, [event.target.id]: event.target.value }
+    setParkInfo(tempParkInfo)
   }
+  const handleChangeValue = event => {
+    console.log('handleChangeValue', event.target.value);
+    const tempParkInfo = { ...parkInfo, [event.target.id]: event.target.value }
+    setParkInfo(tempParkInfo)
+  }
+  
   return (
-    <div>
-    <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open} fullScreen maxWidth="lg">
-      <AppBar className={classes.appBar}>
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={handleClose}
-            aria-label="close"
-          >
-            <CloseIcon />
-          </IconButton>
-          <Typography variant="h6" className={classes.title}>
-            Add New Card
-          </Typography>
-          
-          <Button  color="inherit" onClick={handleClose}>
-            {isNew ? 'Add' : 'Save'}
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <div className={classes.newCardRoot}>
-      <div className={classes.root}>
-      <AppBar position="static" color="default" className={classes.tabs}>
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          indicatorColor="primary"
-          textColor="primary"
-          aria-label="simple"
-        >
-          <Tab label="Main Info" {...a11yProps(0)} />
-          <Tab label="Park Photos" {...a11yProps(1)} />
-          
-        </Tabs>
-      </AppBar>
-     
-        <TabPanel value={value} index={0}>
-        <form className={classes.root} noValidate autoComplete="off" onSubmit={formsubmit} type="POST">
+  <div>
+    <form className={classes.root} noValidate autoComplete="off" onSubmit={formsubmit} type="POST">
           <Grid container spacing={CELL_SPACING}>
             <Grid item xs={6} className={classes.newCardCell}>
               <TextField
@@ -156,7 +124,7 @@ const handleChange = (event, newValue) => {
                 name="name"
                 label="Card Name"
                 className={classes.newCardText}
-                value={parkInfo.name || ''}
+                value={props.parkinfo.name || ''}
                 onChange={handleChangeValue}
               />
             </Grid>
@@ -166,7 +134,7 @@ const handleChange = (event, newValue) => {
                 name="email"
                 label="Email"
                 className={classes.newCardText}
-                value={parkData.email || ''}
+                value={props.parkinfo.email || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -174,7 +142,7 @@ const handleChange = (event, newValue) => {
                 id="phoneNumber"
                 label="Phone Number"
                 className={classes.newCardText}
-                value={parkData.phoneNumber || ''}
+                value={props.parkinfo.phoneNumber || ''}
               />
             </Grid>
           </Grid>
@@ -184,7 +152,7 @@ const handleChange = (event, newValue) => {
                 id="streetAddress"
                 label="Street Address"
                 className={classes.newCardText}
-                value={parkData.streetAddress || ''}
+                value={props.parkinfo.streetAddress || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -192,7 +160,7 @@ const handleChange = (event, newValue) => {
                 id="city"
                 label="City"
                 className={classes.newCardText}
-                value={parkData.city || ''}
+                value={props.parkinfo.city || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -200,7 +168,7 @@ const handleChange = (event, newValue) => {
                 id="state"
                 label="State"
                 className={classes.newCardText}
-                value={parkData.state || ''}
+                value={props.parkinfo.state || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -208,7 +176,7 @@ const handleChange = (event, newValue) => {
                 id="zipCode"
                 label="Zip Code"
                 className={classes.newCardText}
-                value={parkData.zipCode || ''}
+                value={props.parkinfo.zipCode || ''}
               />
             </Grid>
           </Grid>
@@ -218,7 +186,7 @@ const handleChange = (event, newValue) => {
                 id="lat"
                 label="Lat"
                 className={classes.newCardText}
-                value={parkData.lat || ''}
+                value={props.parkinfo.lat || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -226,7 +194,7 @@ const handleChange = (event, newValue) => {
                 id="long"
                 label="Long"
                 className={classes.newCardText}
-                value={parkData.long || ''}
+                value={props.parkinfo.long || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -234,7 +202,7 @@ const handleChange = (event, newValue) => {
                 id="website"
                 label="Website"
                 className={classes.newCardText}
-                value={parkData.website || ''}
+                value={props.parkinfo.website || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -242,7 +210,7 @@ const handleChange = (event, newValue) => {
                 id="origin"
                 label="Origin"
                 className={classes.newCardText}
-                value={parkData.origin || ''}
+                value={props.parkinfo.origin || ''}
               />
             </Grid>
           </Grid>
@@ -255,7 +223,7 @@ const handleChange = (event, newValue) => {
                 inputProps={{
                   readOnly: true,
                 }}
-                value={parkData.id || ''}
+                value={props.parkinfo.id || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -263,7 +231,7 @@ const handleChange = (event, newValue) => {
                 id="type"
                 label="Type"
                 className={classes.newCardText}
-                value={parkData.type || ''}
+                value={props.parkinfo.type || ''}
               />
             </Grid>            
             <Grid item xs className={classes.newCardCell}>
@@ -271,7 +239,7 @@ const handleChange = (event, newValue) => {
                 id="hoursOfOperation"
                 label="Hours Of Operation"
                 className={classes.newCardText}
-                value={parkData.hoursOfOperation || ''}
+                value={props.parkinfo.hoursOfOperation || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -279,7 +247,7 @@ const handleChange = (event, newValue) => {
                 id="acres"
                 label="Acres"
                 className={classes.newCardText}
-                value={parkData.acres || ''}
+                value={props.parkinfo.acres || ''}
               />
             </Grid>
           </Grid>
@@ -291,7 +259,7 @@ const handleChange = (event, newValue) => {
                 className={classes.newCardText}
                 multiline
                 rows={6}
-                value={parkData.description || ''}
+                value={props.parkinfo.description || ''}
               />
             </Grid>
             <Grid item xs={6} className={classes.newCardCell}>
@@ -313,41 +281,61 @@ const handleChange = (event, newValue) => {
             </Grid>
           </Grid>
         </form>
-        </TabPanel>
-        <TabPanel value={value} index={1}>
-          <div className={classes.cardgroup}>
-            {parkData.photos?.map(item => (
-    
-              <Card className={classes.cards} key={item.id}>
-              <CardActionArea>
-                <CardMedia
-                  component="img"
-                  alt="Contemplative Reptile"
-                  height="140"
-                  image={item.photoUrl}
-                  title={item.cardName}
-                />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary" component="p">
-                    {item.cardId}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-              <CardActions>
-                <Button size="small" color="primary">
-                  
-                </Button>
-                <Button size="small" color="primary">
-                  
-                </Button>
-              </CardActions>
-            </Card>
-            ))}
-          </div>  
-        </TabPanel>
+  </div>)
+};
+// End of panel configration
+
+// ParkInfoModal function
+const ParkInfoModal = ({ onClose, open, isNew, itemId}) => {
+  
+  
+  const [parkInfo, setParkInfo] = useState({})
+  const classes = useStyles()
+  const {parkData,fetchParkDataById} = useGetParkById(itemId);
+  const [photoItem, setPhotoItem] = useState({});
+
+  useEffect(() => {
+    //console.log(selectedPark);
+    if (!isNew) 
+      setParkInfo(parkData)
+  }, [parkData, isNew]);
+
+  useEffect(()=>{
+    if(!isNew)
+      fetchParkDataById();
+  },[itemId])
+
+  const handleClose = () => {
+    setParkInfo({});
+    onClose()
+  }
+ 
+  return (
+    <div>
+    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
+      <AppBar className={classes.appBar}>
+        <Toolbar>
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={handleClose}
+            aria-label="close"
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" className={classes.title}>
+            Add New Card
+          </Typography>
+          
+          <Button  color="inherit" onClick={handleClose}>
+            {isNew ? 'Add' : 'Save'}
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <div className={classes.newCardRoot}>
+      <div className={classes.root}>
+        {/* Tab_panel(form_data & Photos) */}
+      <LabTabs parkinfo={parkInfo}/>
     </div>
         
       </div>
