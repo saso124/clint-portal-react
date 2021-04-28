@@ -95,9 +95,7 @@ function LabTabs() {
     </div>
   );
 }
-const EditForm = (props) =>{
-  console.log(props);
-  const classes = useStyles();
+const EditForm = ({parkinfo,classes}) =>{
   const onSubmit = () =>{
     console.log('submit');
 
@@ -105,12 +103,12 @@ const EditForm = (props) =>{
   const [parkInfo, setParkInfo] = useState({})
   const formsubmit = (event) =>{
     event.preventDefault();
-    const tempParkInfo = { ...props.parkInfo, [event.target.id]: event.target.value }
+    const tempParkInfo = { ...parkinfo, [event.target.id]: event.target.value }
     setParkInfo(tempParkInfo)
   }
   const handleChangeValue = event => {
     console.log('handleChangeValue', event.target.value);
-    const tempParkInfo = { ...parkInfo, [event.target.id]: event.target.value }
+    const tempParkInfo = { ...parkinfo, [event.target.id]: event.target.value }
     setParkInfo(tempParkInfo)
   }
   
@@ -124,7 +122,7 @@ const EditForm = (props) =>{
                 name="name"
                 label="Card Name"
                 className={classes.newCardText}
-                value={props.parkinfo.name || ''}
+                value={parkinfo.name || ''}
                 onChange={handleChangeValue}
               />
             </Grid>
@@ -134,7 +132,7 @@ const EditForm = (props) =>{
                 name="email"
                 label="Email"
                 className={classes.newCardText}
-                value={props.parkinfo.email || ''}
+                value={parkinfo.email || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -142,7 +140,7 @@ const EditForm = (props) =>{
                 id="phoneNumber"
                 label="Phone Number"
                 className={classes.newCardText}
-                value={props.parkinfo.phoneNumber || ''}
+                value={parkinfo.phoneNumber || ''}
               />
             </Grid>
           </Grid>
@@ -152,7 +150,7 @@ const EditForm = (props) =>{
                 id="streetAddress"
                 label="Street Address"
                 className={classes.newCardText}
-                value={props.parkinfo.streetAddress || ''}
+                value={parkinfo.streetAddress || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -160,7 +158,7 @@ const EditForm = (props) =>{
                 id="city"
                 label="City"
                 className={classes.newCardText}
-                value={props.parkinfo.city || ''}
+                value={parkinfo.city || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -168,7 +166,7 @@ const EditForm = (props) =>{
                 id="state"
                 label="State"
                 className={classes.newCardText}
-                value={props.parkinfo.state || ''}
+                value={parkinfo.state || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -176,7 +174,7 @@ const EditForm = (props) =>{
                 id="zipCode"
                 label="Zip Code"
                 className={classes.newCardText}
-                value={props.parkinfo.zipCode || ''}
+                value={parkinfo.zipCode || ''}
               />
             </Grid>
           </Grid>
@@ -186,7 +184,7 @@ const EditForm = (props) =>{
                 id="lat"
                 label="Lat"
                 className={classes.newCardText}
-                value={props.parkinfo.lat || ''}
+                value={parkinfo.lat || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -194,7 +192,7 @@ const EditForm = (props) =>{
                 id="long"
                 label="Long"
                 className={classes.newCardText}
-                value={props.parkinfo.long || ''}
+                value={parkinfo.long || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -202,7 +200,7 @@ const EditForm = (props) =>{
                 id="website"
                 label="Website"
                 className={classes.newCardText}
-                value={props.parkinfo.website || ''}
+                value={parkinfo.website || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -210,7 +208,7 @@ const EditForm = (props) =>{
                 id="origin"
                 label="Origin"
                 className={classes.newCardText}
-                value={props.parkinfo.origin || ''}
+                value={parkinfo.origin || ''}
               />
             </Grid>
           </Grid>
@@ -223,7 +221,7 @@ const EditForm = (props) =>{
                 inputProps={{
                   readOnly: true,
                 }}
-                value={props.parkinfo.id || ''}
+                value={parkinfo.id || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -231,7 +229,7 @@ const EditForm = (props) =>{
                 id="type"
                 label="Type"
                 className={classes.newCardText}
-                value={props.parkinfo.type || ''}
+                value={parkinfo.type || ''}
               />
             </Grid>            
             <Grid item xs className={classes.newCardCell}>
@@ -239,7 +237,7 @@ const EditForm = (props) =>{
                 id="hoursOfOperation"
                 label="Hours Of Operation"
                 className={classes.newCardText}
-                value={props.parkinfo.hoursOfOperation || ''}
+                value={parkinfo.hoursOfOperation || ''}
               />
             </Grid>
             <Grid item xs className={classes.newCardCell}>
@@ -247,7 +245,7 @@ const EditForm = (props) =>{
                 id="acres"
                 label="Acres"
                 className={classes.newCardText}
-                value={props.parkinfo.acres || ''}
+                value={parkinfo.acres || ''}
               />
             </Grid>
           </Grid>
@@ -259,7 +257,7 @@ const EditForm = (props) =>{
                 className={classes.newCardText}
                 multiline
                 rows={6}
-                value={props.parkinfo.description || ''}
+                value={parkinfo.description || ''}
               />
             </Grid>
             <Grid item xs={6} className={classes.newCardCell}>
@@ -292,7 +290,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId}) => {
   const [parkInfo, setParkInfo] = useState({})
   const classes = useStyles()
   const {parkData,fetchParkDataById} = useGetParkById(itemId);
-  const [photoItem, setPhotoItem] = useState({});
 
   useEffect(() => {
     //console.log(selectedPark);
@@ -335,7 +332,9 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId}) => {
       <div className={classes.newCardRoot}>
       <div className={classes.root}>
         {/* Tab_panel(form_data & Photos) */}
-      <LabTabs parkinfo={parkInfo}/>
+      <div className={classes.tabbar}>
+      </div>
+      {/* <LabTabs parkinfo={parkInfo} classes={classes}/> */}
     </div>
         
       </div>
