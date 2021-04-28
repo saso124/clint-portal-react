@@ -3,16 +3,20 @@ import axios from 'axios';
 
 import {GET_PARK_BY_ID_URL} from './constants';
 
-export const useGetParkById = (userId) =>{
+export const useGetParkById = (itemId) =>{
 
-    const [parkData,setParkData] = useState([]);
+    const [parkData,setParkData] = useState({});
     
     const fetchParkDataById = async () =>{
-
+        if(itemId == 0)
+        {
+            setParkData({});
+            return;
+        }
         try{
             const result = await axios({
                 method:'GET',
-                url:`${GET_PARK_BY_ID_URL}/${userId}`,
+                url:`${GET_PARK_BY_ID_URL}/${itemId}`,
                 headers:{
                     'accept': 'text/plain',
                     'Access-Control-Allow-Origin': '*',
@@ -31,7 +35,7 @@ export const useGetParkById = (userId) =>{
 
     useEffect(()=>{
       fetchParkDataById();
-    }, [userId])
+    }, [itemId])
 
     return {
         fetchParkDataById,
