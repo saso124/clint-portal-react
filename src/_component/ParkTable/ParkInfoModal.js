@@ -413,10 +413,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
         <div className={classes.newCardRoot}>
         <Formik
             enableReinitialize={true}
-            initialValues={{
-              
-            }}
-           
+          
             onSubmit={(values, { setSubmitting }) => {
               
               axios
@@ -440,11 +437,13 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
               setFieldValue,
               isSubmitting,
             }) => {
+              
               return (
                 <form className={classes.root} onSubmit={handleSubmit}>
                     
                       <div className={classes.cardgroup}>
-                        {parkData.photos?.map(item => (
+                        
+                        {parkInfo.photos?.map(item => (
                           <Card  onClick={(e)=>{setPhotoItem(item)}} 
                             className={item.id == photoItem.id ? `${classes.cardAction} ${classes.cards}` :classes.cards} 
                             key={item.id}
@@ -462,7 +461,18 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                         ))}
                       </div>
                       <Button
-                            type="file"
+                        variant="contained"
+                        component="label"
+                        color="primary"
+                      >
+                        Upload File
+                        <input
+                          type="file"
+                          hidden
+                        />
+                      </Button>
+                      <Button
+                            type="button"
                             color="primary"
                             variant="outlined"
                             className={classes.photosubmit}
