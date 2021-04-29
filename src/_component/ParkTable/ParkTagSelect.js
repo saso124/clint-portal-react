@@ -2,49 +2,48 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { useSelectOptionsByKeyword } from '_hooks/useSelectOptionsByKeyword';
 
-export default function ParkTagSelect({tags}) {
-  const [selectedOption, setSelectedOption] = useState([]);
-  const [defaultOption, setDefaultOption] = useState([]);
+export default function ParkTagSelect(props) {
+  const [tagList, setTagList] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const {selectOptions, fetchSelectOption} = useSelectOptionsByKeyword();
 
   useEffect(()=>{
-    if(tags == null)
-      setSelectedOption([]);
+    if(props.tags == null)
+    setTagList([]);
     else
     {
-      const tempSelectedOption = tags.map((item)=>({value:item.id,label:item.amenity}));
-      setSelectedOption(tempSelectedOption);
-      setDefaultOption(tempSelectedOption);
-      console.log('setSelectedOption',tempSelectedOption);
+      const tempSelectedOption = props.tags.map((item)=>({value:item.id,label:item.amenity}));
+      setTagList(tempSelectedOption);
+      setSelectedTags(tempSelectedOption);
+      //console.log('firstOption => ',showedOption);
     }    
-  },[tags])
+  },[props.tags]);
+
+  useEffect(()=>{
+      if(selectOptions.length != 0){
+        const temparySelect = selectOptions.map((item)=>({value:item.id,label:item.amenity}));
+        const tempSelectOption = temparySelect.filter((item)=>(!selectedTags.includes(item)));
+        setTagList([...selectedTags,...tempSelectOption]);
+      }
+  },[selectOptions])
+
+
 
   const handleInputChange = (newValue) => {
     const inputValue = newValue.replace(/\W/g, '');
-      fetchSelectOption(inputValue);
-    console.log('fetchSelectOption',selectOptions);
-      if(selectOptions.length != 0){
-          const tempSelectOption = selectOptions.map(
-            function (item){
-              if(selectedOption.indexOf(item.id) >-1){
-                return {value:item.id,label:item.amenity};
-              }
-            }
-          );
-
-        const subSelectionOption = selectOptions.concat(tempSelectOption);
-        setSelectedOption(subSelectionOption);
-      }
+    fetchSelectOption(inputValue);
   };
+  const handleSelectedTag = (newValue,actionMeta)=>{
+    setSelectedTags(newValue);
+  }
   return (
     <div style={{width:"100%"}}>
       <Select
         isSearchable="true"
         isMulti
-        defaultValue={defaultOption}
-        value = {selectedOption}
-        onChange={setSelectedOption}
-        options={selectedOption}
+        value={selectedTags}
+        onChange={handleSelectedTag}
+        options={tagList}
         onInputChange={handleInputChange}
       />
     </div>

@@ -16,7 +16,6 @@ export const useSelectOptionsByKeyword = () =>{
           'Access-Control-Allow-Origin': '*',
         }
       });
-      console.log('fetchSelectOption',result.data);
       setSelectOptions(result.data);
     }catch(err){
       console.log('getSelectOptions error',err);

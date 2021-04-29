@@ -28,9 +28,8 @@ import { GET_SAVE_PHOTO_URL } from '../../_hooks/constants'
 import {GET_DEL_PHOTO_URL} from '../../_hooks/constants'
 import { Formik } from 'formik'
 import axios from 'axios'
-import { red } from '@material-ui/core/colors'
-import { set } from 'lodash'
 import ParkTagSelect from './ParkTagSelect'
+//import ParkTempTagSelect from './ParkTempTagSelect'
 
 const CELL_SPACING = 5
 
