@@ -17,6 +17,7 @@ import {
   CardActions,
   CardContent,
   CardMedia,
+  InputLabel
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { useGetParkById } from '_hooks/useGetParkById'
@@ -29,6 +30,8 @@ import { Formik } from 'formik'
 import axios from 'axios'
 import { red } from '@material-ui/core/colors'
 import { set } from 'lodash'
+import ParkTagSelect from './ParkTagSelect'
+
 const CELL_SPACING = 5
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -86,15 +89,43 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
     onClose()
     setValue(0)
   }
-  const addImage = () => {
-    var currentImg = document.querySelector('#file');
-    var otherImg = currentImg.cloneNode(true);
-    
-    var filediv = document.querySelector('#fileDiv');
-    console.log(filediv);
-    filediv.appendChild(otherImg);
-    
+  //one file ui
+  const imgFile = () =>{
+    const removeDiv = (e) =>{
+      console.log(e)
+    }
+    return (
+      <div>
+        <input type="file"/>
+        <span onClick={removeDiv}>&times;</span>
+      </div>
+    );
   }
+  const addImage = () => {
+    return <imgFile/>
+  }
+  //multi file ui with javascript
+  // const addImage = () => {
+  //   var currentImg = document.querySelector('#file');
+
+  //   var otherImg = currentImg.cloneNode(true);
+
+  //   var div = document.createElement('div');
+  //   var x = Math.floor((Math.random() * 10) + 1);
+  //   div.setAttribute('id','file'+x);
+  //   var spantimes = document.createElement('span');
+  //   spantimes.style.fontSize = 'x-large';
+  //   spantimes.style.padding = '1em';
+  //   spantimes.addEventListener('click',function() {console.log(this.parentElement); div.remove(); });
+  //     spantimes.innerHTML='&times;';
+  //     div.appendChild(otherImg);
+  //   div.appendChild(spantimes);
+    
+  //   var filediv = document.querySelector('#fileDiv');
+  //   filediv.appendChild(div);
+  // }
+
+  // file upload
   const submitImage = () =>{
     var formData = new FormData();
     var imagefile = document.querySelector('#file');
@@ -236,7 +267,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
             }) => {
               return (
                 <form className={classes.root} onSubmit={handleSubmit}>
-                    
                       <Grid container spacing={CELL_SPACING}>
                         <Grid item xs={6} className={classes.newCardCell}>
                           <TextField
@@ -254,7 +284,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             name="email"
                             label="Email"
                             className={classes.newCardText}
-                            //value={parkData.email || ''}
                             value={values.email}
                             onChange={handleChange}
                           />
@@ -264,7 +293,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="phoneNumber"
                             label="Phone Number"
                             className={classes.newCardText}
-                            //value={parkData.phoneNumber || ''}
                             value={values.phoneNumber}
                             onChange={handleChange}
                           />
@@ -276,7 +304,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="streetAddress"
                             label="Street Address"
                             className={classes.newCardText}
-                            // value={parkData.streetAddress || ''}
                             value = {values.streetAddress}
                             onChange={handleChange}
                           />
@@ -286,7 +313,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="city"
                             label="City"
                             className={classes.newCardText}
-                            // value={parkData.city || ''}
                             value = {values.city}
                             onChange={handleChange}
                           />
@@ -296,7 +322,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="state"
                             label="State"
                             className={classes.newCardText}
-                            // value={parkData.state || ''}
                             value={values.state}
                             onChange={handleChange}
                           />
@@ -306,7 +331,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="zipCode"
                             label="Zip Code"
                             className={classes.newCardText}
-                            // value={parkData.zipCode || ''}
                             value = {values.zipCode}
                             onChange={handleChange}
                           />
@@ -318,7 +342,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="lat"
                             label="Lat"
                             className={classes.newCardText}
-                            // value={parkData.lat || ''}
                             value={values.lat}
                             onChange={handleChange}
                           />
@@ -328,7 +351,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="long"
                             label="Long"
                             className={classes.newCardText}
-                            // value={parkData.long || ''}
                             value = {values.long}
                             onChange={handleChange}
                           />
@@ -338,7 +360,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="website"
                             label="Website"
                             className={classes.newCardText}
-                            // value={parkData.website || ''}
                             value={values.website}
                             onChange={handleChange}
                           />
@@ -348,7 +369,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="origin"
                             label="Origin"
                             className={classes.newCardText}
-                            // value={parkData.origin || ''}
                             value={values.origin}
                             onChange={handleChange}
                           />
@@ -363,7 +383,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             inputProps={{
                               readOnly: true,
                             }}
-                            // value={parkData.id || ''}
                             value={values.id}
                             onChange={handleChange}
                           />
@@ -373,7 +392,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="type"
                             label="Type"
                             className={classes.newCardText}
-                            // value={parkData.type || ''}
                             value={values.type}
                             onChange={handleChange}
                           />
@@ -383,7 +401,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="hoursOfOperation"
                             label="Hours Of Operation"
                             className={classes.newCardText}
-                            // value={parkData.hoursOfOperation || ''}
                             value={values.hoursOfOperation}
                             onChange={handleChange}
                           />
@@ -393,7 +410,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             id="acres"
                             label="Acres"
                             className={classes.newCardText}
-                            // value={parkData.acres || ''}
                             value={values.acres}
                             onChange={handleChange}
                           />
@@ -407,20 +423,13 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                             className={classes.newCardText}
                             multiline
                             rows={6}
-                            // value={parkData.description || ''}
                             value={values.description}
                             onChange={handleChange}
                           />
                         </Grid>
-                        <Grid item xs={6} className={classes.newCardCell}>
-                          <TextField
-                            id="parkTags"
-                            label="Park Tags"
-                            className={classes.newCardText}
-                            multiline
-                            rows={6}
-                            onChange={handleChange}
-                          />
+                        <Grid item xs={6} className={classes.parktags}>
+                            <InputLabel className={classes.label}>Park Tags</InputLabel>
+                           <ParkTagSelect tags = {parkInfo.parkTags}/>
                         </Grid>
                         <Grid item xs={12} className={classes.submit}>
                           <Button
@@ -440,8 +449,8 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
         </div>
         </TabPanel>
         <TabPanel value='1' hidden={(value==1) ? false : true}>
-        <div className={classes.newCardRoot}>
-        <div className={classes.cardgroup}>
+          <div className={classes.newCardRoot}>
+          <div className={classes.cardgroup}>
                         
                         {parkInfo.photos?.map(item => (
                           <Card  onClick={(e)=>{setPhotoItem(item)}} 
@@ -468,6 +477,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                           // multiple
                           className = {classes.photosubmit}
                       />
+                      
                       </div>
                     <div className={classes.photobuttons}>
                       
@@ -513,6 +523,13 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.background.paper,
     width: '100%',
     marginTop: '1.2em',
+  },
+  label:{
+    fontSize:'1em',
+    marginBottom:'2em'
+  },
+  parktags:{
+    display:'block'
   },
   appBar: {
     position: 'relative',
@@ -578,8 +595,9 @@ const useStyles = makeStyles(theme => ({
     padding:'0.5em',
     right:'15%',
     left:'15%',
-
-  }
+  },
+  //multiselect div
+  
 }))
 
 export default ParkInfoModal
