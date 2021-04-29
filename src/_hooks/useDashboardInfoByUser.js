@@ -5,7 +5,7 @@ import {GET_DASHBOARD_INFO_BY_USER_URL} from './constants'
 
 export const useDashboardInfoByUser = (userId) =>{
 
-  const  [dashboardData,setDashboardData] = useState({});
+  const [dashboardData,setDashboardData] = useState({});
 
   const fetchDashboardByUser  = async () =>{
     try{
