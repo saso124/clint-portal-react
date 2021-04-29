@@ -77,14 +77,22 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
   const { parkData, fetchParkDataById } = useGetParkById(itemId)
   const [photoItem, setPhotoItem] = useState({})
   const [border, setBorder] = useState(0);
+  const [selectedTags, setSelectedTags] = useState([]);
 
 
   useEffect(() => {
-    if (!isNew) setParkInfo(parkData)
+    if (!isNew) {
+      setParkInfo(parkData)
+      if(parkData.parkTags)
+        setSelectedTags(parkData.parkTags.map((item)=>({value:item.id,label:item.amenity})));
+      else
+        setSelectedTags([]);
+    }
   }, [parkData, isNew])
 
   const handleClose = () => {
-    setParkInfo({})
+    setParkInfo({});
+    setSelectedTags([]);
     onClose()
     setValue(0)
   }
@@ -161,6 +169,9 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
         console.error(err);
       });
   }
+  const submitTagLists = () =>{
+    console.log('submitTagLists');
+  }
   const onSubmit = () => {
 
     console.log('submit')
@@ -180,6 +191,11 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
     console.log(target.value)
     console.log(target.id)
   }
+
+  const handleChangeTags = async (value) =>{
+    setSelectedTags(value);
+  }
+
   return (
     <div>
       <Dialog
@@ -239,6 +255,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
               description : parkInfo.description ? parkInfo.description : '',
             }}
             onSubmit={(values, { setSubmitting }) => {
+              values.userId = itemId;
               var d = new Date();
               values.lastUpdated=d.toISOString();
               values.tags=[];
@@ -428,7 +445,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
                         </Grid>
                         <Grid item xs={6} className={classes.parktags}>
                             <InputLabel className={classes.label}>Park Tags</InputLabel>
-                           <ParkTagSelect tags = {parkInfo.parkTags}/>
+                           <ParkTagSelect tags = {selectedTags} onChange={handleChangeTags}/>
                         </Grid>
                         <Grid item xs={12} className={classes.submit}>
                           <Button

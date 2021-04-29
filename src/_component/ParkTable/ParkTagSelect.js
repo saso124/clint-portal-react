@@ -2,28 +2,20 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { useSelectOptionsByKeyword } from '_hooks/useSelectOptionsByKeyword';
 
-export default function ParkTagSelect(props) {
+export default function ParkTagSelect({tags,onChange}) {
   const [tagList, setTagList] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
   const {selectOptions, fetchSelectOption} = useSelectOptionsByKeyword();
 
   useEffect(()=>{
-    if(props.tags == null)
-    setTagList([]);
-    else
-    {
-      const tempSelectedOption = props.tags.map((item)=>({value:item.id,label:item.amenity}));
-      setTagList(tempSelectedOption);
-      setSelectedTags(tempSelectedOption);
-      //console.log('firstOption => ',showedOption);
-    }    
-  },[props.tags]);
+    console.log('ParkTagSelect tags',tags);
+      setTagList(tags);
+  },[tags]);
 
   useEffect(()=>{
       if(selectOptions.length != 0){
         const temparySelect = selectOptions.map((item)=>({value:item.id,label:item.amenity}));
-        const tempSelectOption = temparySelect.filter((item)=>(!selectedTags.includes(item)));
-        setTagList([...selectedTags,...tempSelectOption]);
+        const tempSelectOption = temparySelect.filter((item)=>(!tags.includes(item)));
+        setTagList([...tags,...tempSelectOption]);
       }
   },[selectOptions])
 
@@ -33,15 +25,15 @@ export default function ParkTagSelect(props) {
     const inputValue = newValue.replace(/\W/g, '');
     fetchSelectOption(inputValue);
   };
-  const handleSelectedTag = (newValue,actionMeta)=>{
-    setSelectedTags(newValue);
+  const handleSelectedTag = async (newValue,actionMeta)=>{
+    onChange(newValue);
   }
   return (
     <div style={{width:"100%"}}>
       <Select
         isSearchable="true"
         isMulti
-        value={selectedTags}
+        value={tags}
         onChange={handleSelectedTag}
         options={tagList}
         onInputChange={handleInputChange}
