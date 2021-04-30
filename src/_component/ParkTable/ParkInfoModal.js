@@ -21,6 +21,7 @@ import {
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { useGetParkById } from '_hooks/useGetParkById'
+import { useSubmitParkImage } from '_hooks/useSubmitParkImage'
 import Box from '@material-ui/core/Box'
 import PropTypes from 'prop-types'
 import { GET_SAVE_PARK_URL } from '../../_hooks/constants'
@@ -29,7 +30,7 @@ import {GET_DEL_PHOTO_URL} from '../../_hooks/constants'
 import { Formik } from 'formik'
 import axios from 'axios'
 import ParkTagSelect from './ParkTagSelect'
-//import ParkTempTagSelect from './ParkTempTagSelect'
+import { DropzoneArea  } from 'material-ui-dropzone';
 
 const CELL_SPACING = 5
 
@@ -78,8 +79,9 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
   const [photoItem, setPhotoItem] = useState({})
   const [border, setBorder] = useState(0);
   const [selectedTags, setSelectedTags] = useState([]);
-
-
+  //const {submitImage } = useSubmitParkImage
+  // const [imageFile, setImageFile] = useState(null);
+  let imageFile = [];
   useEffect(() => {
     if (!isNew) {
       setParkInfo(parkData)
@@ -96,52 +98,30 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
     onClose()
     setValue(0)
   }
-  //one file ui
-  const imgFile = () =>{
-    const removeDiv = (e) =>{
-      console.log(e)
+  const generateFormDataAll = (values) => {
+    var temp = new FormData();
+    for (var prop in values) {
+      var one_temp = {};
+      one_temp[prop] = values[prop];
+      temp={...temp,...one_temp};
     }
-    return (
-      <div>
-        <input type="file"/>
-        <span onClick={removeDiv}>&times;</span>
-      </div>
-    );
-  }
-  const addImage = () => {
-    return <imgFile/>
-  }
-  //multi file ui with javascript
-  // const addImage = () => {
-  //   var currentImg = document.querySelector('#file');
-
-  //   var otherImg = currentImg.cloneNode(true);
-
-  //   var div = document.createElement('div');
-  //   var x = Math.floor((Math.random() * 10) + 1);
-  //   div.setAttribute('id','file'+x);
-  //   var spantimes = document.createElement('span');
-  //   spantimes.style.fontSize = 'x-large';
-  //   spantimes.style.padding = '1em';
-  //   spantimes.addEventListener('click',function() {console.log(this.parentElement); div.remove(); });
-  //     spantimes.innerHTML='&times;';
-  //     div.appendChild(otherImg);
-  //   div.appendChild(spantimes);
+    return temp;
+};
+  const handleImage=(files)=>{
     
-  //   var filediv = document.querySelector('#fileDiv');
-  //   filediv.appendChild(div);
-  // }
+      const formData = new FormData()
 
-  // file upload
-  const submitImage = () =>{
-    var formData = new FormData();
-    var imagefile = document.querySelector('#file');
-    console.log(imagefile.files);
-    formData.append("image", imagefile.files);
-    
-    //file_url : GET_SAVE_PHOTO_URL
+      files.forEach((file, i) => {
+        formData.append(i, file)
+      })
+    console.log('form_data => ', formData);
+    let submitData = {};
+    submitData= {
+      'ParkId':itemId,
+      'Files':formData
+    }
     axios
-    .post('', formData, {
+    .post(GET_SAVE_PHOTO_URL,submitData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }}
@@ -149,7 +129,31 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
     .then(() => console.log('SUCCESS fileUpload'))
     .catch(err => {
         console.error(err);
-      })
+    })
+    imageFile = formData;
+  }
+
+  useEffect(()=>{
+    imageFile = [];
+  },[])
+  // file upload
+  const submitImage = () =>{
+    let submitData = {};
+    submitData= {
+      'ParkId':itemId,
+      'Files':imageFile
+    }
+    console.log('submitImage => ',submitData);
+    axios
+    .post(GET_SAVE_PHOTO_URL,submitData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }}
+    )
+    .then(() => console.log('SUCCESS fileUpload'))
+    .catch(err => {
+        console.error(err);
+    })
   }
 
   const handleChangeValue = event => {
@@ -243,7 +247,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
               streetAddress : parkInfo.streesAddress ? parkInfo.streesAddress : '',
               city: parkInfo.city ? parkInfo.city : '',
               state: parkInfo.state ? parkInfo.state : '',
-              zipCode : parkInfo.zipCode ? parkInfo.zipCode : '',
+              zipCode : parkInfo.zipCode ? parkInfo.zipCode : null,
               lat : parkInfo.lat ? parkInfo.lat : '',
               long : parkInfo.long ? parkInfo.long : '',
               website : parkInfo.website ? parkInfo.website : '',
@@ -255,19 +259,24 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
               description : parkInfo.description ? parkInfo.description : '',
             }}
             onSubmit={(values, { setSubmitting }) => {
+
               values.userId = itemId;
               var d = new Date();
               values.lastUpdated=d.toISOString();
               values.tags=[];
               values.parkTags = [];
-              axios
-                  .post(GET_SAVE_PARK_URL, values)
-                  .then(() => console.log('success submited'))
-                  .catch(err => {
-                    console.error(err);
-                  });
-              console.log(values);
-
+              axios({
+                method: 'POST',
+                url: `${GET_SAVE_PARK_URL}`,
+                headers:{
+                  'accept': 'text/plain',
+                  'Access-Control-Allow-Origin': '*',
+                },
+                data: values
+              }).then(() => console.log('success submited'))
+                .catch(err => {
+                      console.error(err);
+              });
             }}
           >
             {({
@@ -466,66 +475,60 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
         </TabPanel>
         <TabPanel value='1' hidden={(value==1) ? false : true}>
           <div className={classes.newCardRoot}>
-          <div className={classes.cardgroup}>
-                        
-                        {parkInfo.photos?.map(item => (
-                          <Card  onClick={(e)=>{setPhotoItem(item)}} 
-                            className={item.id == photoItem.id ? `${classes.cardAction} ${classes.cards}` :classes.cards} 
-                            key={item.id}
-                          >
-                            <CardActionArea >
-                              <CardMedia
-                                component="img"
-                                alt="Contemplative Reptile"
-                                height="140"
-                                image={item.photoUrl}
-                                title={item.cardName}
-                              />
-                            </CardActionArea>
-                          </Card>
-                        ))}
-                      </div>
-                      <div className={classes.photodiv} id="fileDiv">
-                      <input
-                          type="file"
-                          id='file'
-                          color="primary"
-                          // multiple
-                          className = {classes.photosubmit}
-                      />
-                      
-                      </div>
-                    <div className={classes.photobuttons}>
-                      
-                      
-                      <Button
-                            type="button"
-                            color="primary"
-                            variant="outlined"
-                            onClick={submitImage}
-                            className={classes.photosubmit}
-                          >
-                        SUBMIT
-                      </Button>
-                      <Button
-                            type="button"
-                            color="primary"
-                            variant="outlined"
-                            onClick={addImage}
-                            className={classes.photosubmit}
-                          >
-                        ADD
-                      </Button>
-                      <Button
-                            type="button"
-                            color="primary"
-                            variant="outlined"
-                            onClick={delPhoto}
-                            className={classes.photosubmit}
-                          >
-                        DELETE
-                      </Button>
-                      </div>
+          
+          <Grid container spacing={CELL_SPACING}>
+              <Grid item xs={12} className={classes.newCardCell}>
+              {parkInfo.photos?.map(item => (
+                <Card  onClick={(e)=>{setPhotoItem(item)}} 
+                  className={item.id == photoItem.id ? `${classes.cardAction} ${classes.cards}` :classes.cards} 
+                  key={item.id}
+                >
+                  <CardActionArea >
+                    <CardMedia
+                      component="img"
+                      alt="Contemplative Reptile"
+                      height="140"
+                      image={item.photoUrl}
+                      title={item.cardName}
+                    />
+                  </CardActionArea>
+                </Card>
+              ))}
+              </Grid>
+          </Grid>          
+          <Grid container spacing={CELL_SPACING}>
+              <Grid item xs={10} className={classes.newCardCell}>
+                  <DropzoneArea
+                    acceptedFile={["image/png"]}
+                    filesLimit={5}
+                    onChange={handleImage}
+                    />
+              </Grid>
+          </Grid>
+          <Grid container spacing={CELL_SPACING}>
+              <div className={classes.photobuttons}>
+                <Button
+                      type="button"
+                      color="primary"
+                      variant="outlined"
+                      onClick={submitImage}
+                      className={classes.photosubmit}
+                    >
+                  SUBMIT
+                </Button>
+                
+                <Button
+                      type="button"
+                      color="primary"
+                      variant="outlined"
+                      onClick={delPhoto}
+                      className={classes.photosubmit}
+                    >
+                  DELETE
+                </Button>
+              </div>
+          </Grid>
+          
         
         </div>
         </TabPanel>
