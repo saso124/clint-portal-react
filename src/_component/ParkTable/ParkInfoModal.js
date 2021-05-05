@@ -20,20 +20,20 @@ import CloseIcon from '@material-ui/icons/Close'
 import { useGetParkById } from '_hooks/useGetParkById'
 import Box from '@material-ui/core/Box'
 import { Formik } from 'formik'
-import { AuthContext} from "_provider/AuthProvider";
+import { AuthContext } from '_provider/AuthProvider'
 import ParkTagSelect from './ParkTagSelect'
-import FallbackImg  from '../../_assets/fallback.png'
-import {DropzoneDialog} from 'material-ui-dropzone'
-import {generateFormData} from '_utils/helper'
+import FallbackImg from '../../_assets/fallback.png'
+import { DropzoneDialog } from 'material-ui-dropzone'
+import { generateFormData } from '_utils/helper'
 
 const CELL_SPACING = 5
 
-let isUpdated = false;
+let isUpdated = false
 
-let FallbackImgHash = {};
-let selectImgEl = null;
+let FallbackImgHash = {}
+let selectImgEl = null
 
-const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
+const ParkInfoModal = ({ onClose, open, isNew, itemId, onUpdated }) => {
   // Panel configration
   const [value, setValue] = useState(0)
   const { currentUser } = useContext(AuthContext)
@@ -41,15 +41,21 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
   // End of panel configration
   const classes = useStyles()
   const [parkInfo, setParkInfo] = useState({})
-  const { parkData, fetchParkDataById,saveParkData,addPhotoData,deletePhotoData} = useGetParkById()
-  const [openUploadModal,setOpenUploadModal] = useState(false)
+  const {
+    parkData,
+    fetchParkDataById,
+    saveParkData,
+    addPhotoData,
+    deletePhotoData,
+  } = useGetParkById()
+  const [openUploadModal, setOpenUploadModal] = useState(false)
   const modalTitle = isNew ? 'Add new Card' : 'Edit Card'
 
   useEffect(() => {
     // console.log('ParkInfoModal parkData',parkData);
-    setParkInfo(parkData);
-    FallbackImgHash = {};
-    selectImgEl = null;
+    setParkInfo(parkData)
+    FallbackImgHash = {}
+    selectImgEl = null
   }, [parkData])
 
   useEffect(() => {
@@ -57,16 +63,14 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
     if (open) {
       if (!isNew) fetchParkDataById(itemId)
     } else {
-      setParkInfo({});
+      setParkInfo({})
 
-      if(isUpdated)
-        onUpdated();
+      if (isUpdated) onUpdated()
     }
   }, [open])
   const handleChange = (event, newValue) => {
-    if(isNew && newValue==1)
-      return;
-      
+    if (isNew && newValue == 1) return
+
     setValue(newValue)
   }
 
@@ -75,57 +79,51 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
     onClose()
     setValue(0)
   }
-  const handleImageError = (e,src) => {
-    e.target.onerror = null;
+  const handleImageError = (e, src) => {
+    e.target.onerror = null
     //e.target.style.display = 'none'
-    e.target.src = FallbackImg;
+    e.target.src = FallbackImg
 
-    FallbackImgHash[src] = 1;
-
+    FallbackImgHash[src] = 1
   }
   const onSubmit = () => {
     // console.log('submit')
   }
-  const handleSavePhoto = async (files) =>{
-
+  const handleSavePhoto = async files => {
     // console.log('Image Upload =>',files);
 
     const dataForm = generateFormData({
-      CardId: parkInfo.id
-    });
+      CardId: parkInfo.id,
+    })
 
-    dataForm.append('File',files[0]);
+    dataForm.append('File', files[0])
 
     // console.log('handleSavePhoto',dataForm);
 
-    setOpenUploadModal(false);
-    await addPhotoData(dataForm,parkInfo.id);
-
+    setOpenUploadModal(false)
+    await addPhotoData(dataForm, parkInfo.id)
   }
-  const handleSaveParkData = async (parkData) =>{
-    isUpdated = true;
-    await saveParkData(parkData);
+  const handleSaveParkData = async parkData => {
+    isUpdated = true
+    await saveParkData(parkData)
   }
 
-  const handleDeletePhoto = async ()=>{
-    if(selectImgEl == null)
-      return;
+  const handleDeletePhoto = async () => {
+    if (selectImgEl == null) return
 
     // console.log('handleDeletePhoto',selectImgEl);
-    const {item} = selectImgEl;
+    const { item } = selectImgEl
 
-    await deletePhotoData(item.photoUrl,parkInfo.id);
+    await deletePhotoData(item.photoUrl, parkInfo.id)
   }
 
-  const changeSelectImg = (imgEl) => {
-
-    if(selectImgEl != null)
-    {
-      selectImgEl.el.classList.remove(classes.cardAction);
+  const changeSelectImg = imgEl => {
+    if (selectImgEl != null) {
+      selectImgEl.el.classList.remove(classes.cardAction)
     }
 
-    selectImgEl = imgEl;
-    selectImgEl.el.classList.add(classes.cardAction);
+    selectImgEl = imgEl
+    selectImgEl.el.classList.add(classes.cardAction)
   }
 
   function TabPanel(props) {
@@ -213,7 +211,10 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
                   : '',
                 acres: parkInfo.acres ? parkInfo.acres : '',
                 description: parkInfo.description ? parkInfo.description : '',
-                tags: parkInfo.parkTags?.map(item => ({ value: item.id, label: item.amenity }))
+                tags: parkInfo.parkTags?.map(item => ({
+                  value: item.id,
+                  label: item.amenity,
+                })),
               }}
               onSubmit={(values, { setSubmitting }) => {
                 const params = {
@@ -228,8 +229,8 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
                     stayLimit: '',
                   },
                 }
-                
-                handleSaveParkData(params);
+
+                handleSaveParkData(params)
                 // console.log(values)
               }}
             >
@@ -406,9 +407,12 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
                       </Grid>
                       <Grid item xs={6} className={classes.parktags}>
                         <InputLabel className={classes.label}>Park Tags</InputLabel>
-                        <ParkTagSelect tags={values.tags} onChange={(value)=>{
-                          setFieldValue('tags',value)
-                        }} />
+                        <ParkTagSelect
+                          tags={values.tags}
+                          onChange={value => {
+                            setFieldValue('tags', value)
+                          }}
+                        />
                       </Grid>
                       <Grid item xs={12} className={classes.submit}>
                         <Button
@@ -429,62 +433,65 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
         </TabPanel>
         <TabPanel value="1" hidden={value == 1 ? false : true}>
           <div className={classes.newCardRoot}>
-          <div className={classes.cardgroup}>
-            <Grid container spacing={3} noWrap>
-              {parkInfo.photos?.map(item => (
-              <Grid item sm={6} md={3} lg={2} xs={2} xl={2} noWrap>
-                <Card  onClick={(e)=>changeSelectImg({el:e.target,item})} 
-                  className={classes.oneImageDiv} 
-                  key={item.id}
-                >
-                  <CardActionArea >
-                    <CardMedia
-                      component="img"
-                      alt=""
-                      onError={(e) => handleImageError(e,item.photoUrl)} 
-                      image={FallbackImgHash[item.photoUrl]? FallbackImg : item.photoUrl}
-                      className={classes.oneImage}
-                    />
-                  </CardActionArea>
-                </Card>
+            <div className={classes.cardgroup}>
+              <Grid container spacing={3} noWrap>
+                {parkInfo.photos?.map(item => (
+                  <Grid item sm={6} md={3} lg={2} xs={2} xl={2} noWrap>
+                    <Card
+                      onClick={e => changeSelectImg({ el: e.target, item })}
+                      className={classes.oneImageDiv}
+                      key={item.id}
+                    >
+                      <CardActionArea>
+                        <CardMedia
+                          component="img"
+                          alt=""
+                          onError={e => handleImageError(e, item.photoUrl)}
+                          image={
+                            FallbackImgHash[item.photoUrl] ? FallbackImg : item.photoUrl
+                          }
+                          className={classes.oneImage}
+                        />
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                ))}
               </Grid>
-              ))}
-            </Grid>
+            </div>
+            <DropzoneDialog
+              open={openUploadModal}
+              onSave={handleSavePhoto}
+              // onChange={handleSavePhoto}
+              acceptedFiles={['image/jpeg', 'image/png', 'image/bmp']}
+              showPreviews={true}
+              maxFileSize={5000000}
+              filesLimit={1}
+              onClose={() => {
+                setOpenUploadModal(false)
+              }}
+              previewGridClasses={{ container: classes.dropzonePreviewContainer }}
+            />
+            <div className={classes.photobuttons}>
+              <Button
+                type="button"
+                color="primary"
+                variant="outlined"
+                className={classes.photosubmit}
+                onClick={() => setOpenUploadModal(true)}
+              >
+                ADD
+              </Button>
+              <Button
+                type="button"
+                color="primary"
+                variant="outlined"
+                className={classes.photosubmit}
+                onClick={handleDeletePhoto}
+              >
+                DELETE
+              </Button>
+            </div>
           </div>
-              <DropzoneDialog
-                  open={openUploadModal}
-                  onSave={handleSavePhoto}
-                  // onChange={handleSavePhoto}
-                  acceptedFiles={['image/jpeg', 'image/png', 'image/bmp']}
-                  showPreviews={true}
-                  maxFileSize={5000000}
-                  filesLimit={1}
-                  onClose={()=>{setOpenUploadModal(false)}}
-                  previewGridClasses={{container:classes.dropzonePreviewContainer}}
-              />
-                    <div className={classes.photobuttons}>
-                      
-                      <Button
-                            type="button"
-                            color="primary"
-                            variant="outlined"
-                            className={classes.photosubmit}
-                            onClick={()=>setOpenUploadModal(true)}
-                          >
-                        ADD
-                      </Button>
-                      <Button
-                        type="button"
-                        color="primary"
-                        variant="outlined"
-                        className={classes.photosubmit}
-                        onClick={handleDeletePhoto}
-                      >
-                        DELETE
-                      </Button>
-                      </div>
-        
-        </div>
         </TabPanel>
       </Dialog>
     </div>
@@ -497,12 +504,12 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     marginTop: '1.2em',
   },
-  label:{
-    fontSize:'1em',
-    marginBottom:'2em'
+  label: {
+    fontSize: '1em',
+    marginBottom: '2em',
   },
-  parktags:{
-    display:'block'
+  parktags: {
+    display: 'block',
   },
   appBar: {
     position: 'relative',
@@ -517,7 +524,7 @@ const useStyles = makeStyles(theme => ({
   newCardRoot: {
     // width: '100%',
     flexGrow: 1,
-    minWidth:'70%',
+    minWidth: '70%',
     marginLeft: 30,
   },
   newCardCell: {
@@ -539,7 +546,6 @@ const useStyles = makeStyles(theme => ({
     padding: '1em',
     justifyContent: 'flex-start',
   },
-  
 
   panelgroup: {
     width: '95%',
@@ -549,67 +555,67 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'flex-end',
   },
   photosubmit: {
-    textAlign:'center',
-    marginLeft:'1em',
-    fontSize:'1em'
+    textAlign: 'center',
+    marginLeft: '1em',
+    fontSize: '1em',
   },
- 
-  photobuttons : {
-    width:'40%',
-    margin:'1em auto', 
-    position:'relative',
-    bottom:'0',
-    padding:'0.5em',
-    display:'flex',
-    justifyContent:'center'
+
+  photobuttons: {
+    width: '40%',
+    margin: '1em auto',
+    position: 'relative',
+    bottom: '0',
+    padding: '0.5em',
+    display: 'flex',
+    justifyContent: 'center',
   },
   //multiselect div
-  imageItem:{
-    display:'flex',
-    flex:'1',
-    flexDirection:"row",
+  imageItem: {
+    display: 'flex',
+    flex: '1',
+    flexDirection: 'row',
   },
-  oneImageDiv:{
+  oneImageDiv: {
     transition: 'all .2s ease-in-out',
-    display:'flex',
-    position:'relative',
+    display: 'flex',
+    position: 'relative',
     minWidth: '100%',
-    maxWidth:'100%',
-    width:'16%',
-    margin:'0 5px',
-    height:'160px'
+    maxWidth: '100%',
+    width: '16%',
+    margin: '0 5px',
+    height: '160px',
   },
-  
-  imageAction:{
-    display:'none'
+
+  imageAction: {
+    display: 'none',
   },
-  overLayImage:{
-    display:'block',
-    position:'absolute',
-    width:'100%',
-    top:'0',
-    left:'0',
-    maxHeight:'100%',
-    maxWidth:'100%',
-    width:'100%',
-    height:'100%',
-    background:'#767b727a'
+  overLayImage: {
+    display: 'block',
+    position: 'absolute',
+    width: '100%',
+    top: '0',
+    left: '0',
+    maxHeight: '100%',
+    maxWidth: '100%',
+    width: '100%',
+    height: '100%',
+    background: '#767b727a',
   },
-  oneImage:{
-    maxWidth:'100%',
-    width:'100%',
-    minWidth:'100%',
-    height:'100%'
+  oneImage: {
+    maxWidth: '100%',
+    width: '100%',
+    minWidth: '100%',
+    height: '100%',
   },
-  cardAction : {
+  cardAction: {
     //transform:'scale(1.05)',
-     border:'5px solid #ae59e3',
-     borderRadius:'5px',  
-     outline:'5px solid grey',
+    border: '5px solid #ae59e3',
+    borderRadius: '5px',
+    outline: '5px solid grey',
   },
-  dropzonePreviewContainer:{
-    width: '90%'
-  }
+  dropzonePreviewContainer: {
+    width: '90%',
+  },
 }))
 
 export default ParkInfoModal
