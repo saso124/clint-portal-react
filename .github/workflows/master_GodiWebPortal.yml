@@ -20,8 +20,6 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: '14.x'
-    - name: clean cache
-        run: npm cache clean --force
     - name: install
         run: npm ci
     - name: npm install
