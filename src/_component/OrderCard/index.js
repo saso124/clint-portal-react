@@ -96,12 +96,12 @@ const OrderCard = props => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell ClassName={classes.thead}>Park name</TableCell>
+              <TableCell className={classes.thead}>Park name</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-                {dashboardData.popularParks?.map(item => (
-                    <TableRow><TableCell className={classes.text1} style={{alignSelf:'center'}}>{item}</TableCell></TableRow>
+                {dashboardData.popularParks?.map((item,index) => (
+                    <TableRow key={index}><TableCell className={classes.text1} style={{alignSelf:'center'}}>{item}</TableCell></TableRow>
                   ))}
                 
           </TableBody>
@@ -117,7 +117,7 @@ const useStyles = makeStyles(theme => ({
   },
   thead:{
     fontFamily:'san-serif',
-    textAlign:'center',
+    textAlign:'left',
     fontSize:'1.25em'
   }
 }))

@@ -17,7 +17,7 @@ export const useGetParkByUser = (userId) =>{
                     'Access-Control-Allow-Origin': '*',
                 }
             });
-            console.log(result.data);
+            // console.log(result.data);
             setParkData(result.data)
             // setParkData(data);
         }catch(err){

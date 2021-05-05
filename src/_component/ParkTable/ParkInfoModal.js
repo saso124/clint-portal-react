@@ -9,49 +9,130 @@ import {
   Dialog,
   Grid,
   TextField,
-  Slide,
   Tab,
   Tabs,
   Card,
   CardActionArea,
-  CardActions,
-  CardContent,
   CardMedia,
-  InputLabel
+  InputLabel,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { useGetParkById } from '_hooks/useGetParkById'
-import { useSubmitParkImage } from '_hooks/useSubmitParkImage'
 import Box from '@material-ui/core/Box'
-import PropTypes from 'prop-types'
-import { GET_SAVE_PARK_URL } from '../../_hooks/constants'
-import { GET_SAVE_PHOTO_URL } from '../../_hooks/constants'
-import {GET_DEL_PHOTO_URL} from '../../_hooks/constants'
 import { Formik } from 'formik'
-import axios from 'axios'
+import { AuthContext} from "_provider/AuthProvider";
 import ParkTagSelect from './ParkTagSelect'
-import { DropzoneArea  } from 'material-ui-dropzone';
+import FallbackImg  from '../../_assets/fallback.png'
+import {DropzoneDialog} from 'material-ui-dropzone'
+import {generateFormData} from '_utils/helper'
 
 const CELL_SPACING = 5
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />
-})
+let isUpdated = false;
 
-const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
+let FallbackImgHash = {};
+let selectImgEl = null;
+
+const ParkInfoModal = ({ onClose, open, isNew, itemId,onUpdated}) => {
   // Panel configration
   const [value, setValue] = useState(0)
-  
+  const { currentUser } = useContext(AuthContext)
+
+  // End of panel configration
+  const classes = useStyles()
+  const [parkInfo, setParkInfo] = useState({})
+  const { parkData, fetchParkDataById,saveParkData,addPhotoData,deletePhotoData} = useGetParkById()
+  const [openUploadModal,setOpenUploadModal] = useState(false)
+  const modalTitle = isNew ? 'Add new Card' : 'Edit Card'
+
+  useEffect(() => {
+    // console.log('ParkInfoModal parkData',parkData);
+    setParkInfo(parkData);
+    FallbackImgHash = {};
+    selectImgEl = null;
+  }, [parkData])
+
+  useEffect(() => {
+    // console.log('use effect open', { open, isNew, itemId })
+    if (open) {
+      if (!isNew) fetchParkDataById(itemId)
+    } else {
+      setParkInfo({});
+
+      if(isUpdated)
+        onUpdated();
+    }
+  }, [open])
+  const handleChange = (event, newValue) => {
+    if(isNew && newValue==1)
+      return;
+      
+    setValue(newValue)
+  }
+
+  const handleClose = () => {
+    setParkInfo({})
+    onClose()
+    setValue(0)
+  }
+  const handleImageError = (e,src) => {
+    e.target.onerror = null;
+    //e.target.style.display = 'none'
+    e.target.src = FallbackImg;
+
+    FallbackImgHash[src] = 1;
+
+  }
+  const onSubmit = () => {
+    // console.log('submit')
+  }
+  const handleSavePhoto = async (files) =>{
+
+    // console.log('Image Upload =>',files);
+
+    const dataForm = generateFormData({
+      CardId: parkInfo.id
+    });
+
+    dataForm.append('File',files[0]);
+
+    // console.log('handleSavePhoto',dataForm);
+
+    setOpenUploadModal(false);
+    await addPhotoData(dataForm,parkInfo.id);
+
+  }
+  const handleSaveParkData = async (parkData) =>{
+    isUpdated = true;
+    await saveParkData(parkData);
+  }
+
+  const handleDeletePhoto = async ()=>{
+    if(selectImgEl == null)
+      return;
+
+    // console.log('handleDeletePhoto',selectImgEl);
+    const {item} = selectImgEl;
+
+    await deletePhotoData(item.photoUrl,parkInfo.id);
+  }
+
+  const changeSelectImg = (imgEl) => {
+
+    if(selectImgEl != null)
+    {
+      selectImgEl.el.classList.remove(classes.cardAction);
+    }
+
+    selectImgEl = imgEl;
+    selectImgEl.el.classList.add(classes.cardAction);
+  }
+
   function TabPanel(props) {
     const { children, hidden, ...other } = props
 
     return (
-      <div
-        role="tabpanel"
-        hidden={hidden}
-        className={props.className}
-        {...other}
-      >
+      <div role="tabpanel" hidden={hidden} className={props.className} {...other}>
         {!hidden && (
           <Box div={2}>
             <div>{children}</div>
@@ -59,145 +140,6 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
         )}
       </div>
     )
-  }
-
-  TabPanel.propTypes = {
-    children: PropTypes.node,
-    hidden:PropTypes.any,
-  }
-  
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue)
-  }
-
-  // End of panel configration
-  const classes = useStyles()
-  const [parkInfo, setParkInfo] = useState({})
-  const modalTitle = (isNew)?'Add new Card':'Edit Card'
-  const { parkData, fetchParkDataById } = useGetParkById(itemId)
-  const [photoItem, setPhotoItem] = useState({})
-  const [border, setBorder] = useState(0);
-  const [selectedTags, setSelectedTags] = useState([]);
-  //const {submitImage } = useSubmitParkImage
-  // const [imageFile, setImageFile] = useState(null);
-  let imageFile = [];
-  useEffect(() => {
-    if (!isNew) {
-      setParkInfo(parkData)
-      if(parkData.parkTags)
-        setSelectedTags(parkData.parkTags.map((item)=>({value:item.id,label:item.amenity})));
-      else
-        setSelectedTags([]);
-    }
-  }, [parkData, isNew])
-
-  const handleClose = () => {
-    setParkInfo({});
-    setSelectedTags([]);
-    onClose()
-    setValue(0)
-  }
-  const generateFormDataAll = (values) => {
-    var temp = new FormData();
-    for (var prop in values) {
-      var one_temp = {};
-      one_temp[prop] = values[prop];
-      temp={...temp,...one_temp};
-    }
-    return temp;
-};
-  const handleImage=(files)=>{
-    
-      const formData = new FormData()
-
-      files.forEach((file, i) => {
-        formData.append(i, file)
-      })
-    console.log('form_data => ', formData);
-    let submitData = {};
-    submitData= {
-      'ParkId':itemId,
-      'Files':formData
-    }
-    axios
-    .post(GET_SAVE_PHOTO_URL,submitData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }}
-    )
-    .then(() => console.log('SUCCESS fileUpload'))
-    .catch(err => {
-        console.error(err);
-    })
-    imageFile = formData;
-  }
-
-  useEffect(()=>{
-    imageFile = [];
-  },[])
-  // file upload
-  const submitImage = () =>{
-    let submitData = {};
-    submitData= {
-      'ParkId':itemId,
-      'Files':imageFile
-    }
-    console.log('submitImage => ',submitData);
-    axios
-    .post(GET_SAVE_PHOTO_URL,submitData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }}
-    )
-    .then(() => console.log('SUCCESS fileUpload'))
-    .catch(err => {
-        console.error(err);
-    })
-  }
-
-  const handleChangeValue = event => {
-    
-    event.preventDefault()
-    const tempParkInfo = { ...parkInfo, [event.target.id]: event.target.value }
-    setParkInfo(tempParkInfo)
-  }
-  const delPhoto = event =>{
-    event.preventDefault();
-    console.log(photoItem);
-   
-    axios
-      .delete(`${GET_DEL_PHOTO_URL}?url=${photoItem.photoUrl}`)
-      .then(() => console.log('SUCCESS DELELTE'))
-      .catch(err => {
-        console.error(err);
-      });
-  }
-  const submitTagLists = () =>{
-    console.log('submitTagLists');
-  }
-  const onSubmit = () => {
-
-    console.log('submit')
-  }
-  const focusCard = (event) =>{
-    //styles
-   const tempItem = {...photoItem,[event.target.key]:event.target.className}
-   setPhotoItem(tempItem);
-    console.log(photoItem);
-
-      (border==0) ? setBorder(1) : setBorder(0);
-
-  }
-  const formsubmit = event => {
-    event.preventDefault()
-    const target = event.target
-    console.log(target.value)
-    console.log(target.id)
-  }
-
-  const handleChangeTags = async (value) =>{
-    setSelectedTags(value);
   }
 
   return (
@@ -217,7 +159,7 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
               onClick={handleClose}
               aria-label="close"
             >
-            <CloseIcon />
+              <CloseIcon />
             </IconButton>
             <Typography variant="h6" className={classes.title}>
               {modalTitle}
@@ -232,303 +174,315 @@ const ParkInfoModal = ({ onClose, open, isNew, itemId }) => {
             textColor="primary"
             aria-label="simple"
           >
-            <Tab label="Main Info" id="full-width-tab-0" aria-controls="full-width-tabpanel-0" />
-            <Tab label="Park Photos" id="full-width-tab-1" aria-controls="full-width-tabpanel-1" />
+            <Tab
+              label="Main Info"
+              id="full-width-tab-0"
+              aria-controls="full-width-tabpanel-0"
+            />
+            <Tab
+              label="Park Photos"
+              id="full-width-tab-1"
+              aria-controls="full-width-tabpanel-1"
+            />
           </Tabs>
         </AppBar>
-        <TabPanel value='0' hidden={(value==0) ? false : true} className={classes.panelgroup}>
+        <TabPanel
+          value="0"
+          hidden={value == 0 ? false : true}
+          className={classes.panelgroup}
+        >
           <div className={classes.newCardRoot}>
-          <Formik
-            enableReinitialize={true}
-            initialValues={{
-              name: parkInfo.name ? parkInfo.name : '',
-              email: parkInfo.email ? parkInfo.email : '',
-              phoneNumber : parkInfo.phoneNumber ? parkInfo.phoneNumber : '',
-              streetAddress : parkInfo.streesAddress ? parkInfo.streesAddress : '',
-              city: parkInfo.city ? parkInfo.city : '',
-              state: parkInfo.state ? parkInfo.state : '',
-              zipCode : parkInfo.zipCode ? parkInfo.zipCode : null,
-              lat : parkInfo.lat ? parkInfo.lat : '',
-              long : parkInfo.long ? parkInfo.long : '',
-              website : parkInfo.website ? parkInfo.website : '',
-              origin : parkInfo.origin ? parkInfo.origin : '',
-              id : parkInfo.id ? parkInfo.id : '',
-              type : parkInfo.type ? parkInfo.type : '',
-              hoursOfOperation : parkInfo.hoursOfOperation ? parkInfo.hoursOfOperation : '',
-              acres : parkInfo.acres ? parkInfo.acres : '',
-              description : parkInfo.description ? parkInfo.description : '',
-            }}
-            onSubmit={(values, { setSubmitting }) => {
+            <Formik
+              enableReinitialize={true}
+              initialValues={{
+                name: parkInfo.name ? parkInfo.name : '',
+                email: parkInfo.email ? parkInfo.email : '',
+                phoneNumber: parkInfo.phoneNumber ? parkInfo.phoneNumber : '',
+                streetAddress: parkInfo.streetAddress ? parkInfo.streetAddress : '',
+                city: parkInfo.city ? parkInfo.city : '',
+                state: parkInfo.state ? parkInfo.state : '',
+                zipCode: parkInfo.zipCode ? parkInfo.zipCode : '',
+                lat: parkInfo.lat ? parkInfo.lat : '',
+                long: parkInfo.long ? parkInfo.long : '',
+                website: parkInfo.website ? parkInfo.website : '',
+                origin: parkInfo.origin ? parkInfo.origin : '',
+                id: parkInfo.id ? parkInfo.id : '',
+                type: parkInfo.type ? parkInfo.type : '',
+                hoursOfOperation: parkInfo.hoursOfOperation
+                  ? parkInfo.hoursOfOperation
+                  : '',
+                acres: parkInfo.acres ? parkInfo.acres : '',
+                description: parkInfo.description ? parkInfo.description : '',
+                tags: parkInfo.parkTags?.map(item => ({ value: item.id, label: item.amenity }))
+              }}
+              onSubmit={(values, { setSubmitting }) => {
+                const params = {
+                  ...values,
+                  ...{
+                    lastUpdated: new Date().toISOString(),
+                    tags: values.tags.map(item => item.value),
 
-              values.userId = itemId;
-              var d = new Date();
-              values.lastUpdated=d.toISOString();
-              values.tags=[];
-              values.parkTags = [];
-              axios({
-                method: 'POST',
-                url: `${GET_SAVE_PARK_URL}`,
-                headers:{
-                  'accept': 'text/plain',
-                  'Access-Control-Allow-Origin': '*',
-                },
-                data: values
-              }).then(() => console.log('success submited'))
-                .catch(err => {
-                      console.error(err);
-              });
-            }}
-          >
-            {({
-              values,
-              errors,
-              touched,
-              handleChange,
-              handleBlur,
-              handleSubmit,
-              setFieldTouched,
-              setFieldValue,
-              isSubmitting,
-            }) => {
-              return (
-                <form className={classes.root} onSubmit={handleSubmit}>
-                      <Grid container spacing={CELL_SPACING}>
-                        <Grid item xs={6} className={classes.newCardCell}>
-                          <TextField
-                            id="name"
-                            name="name"
-                            label="Card Name"
-                            className={classes.newCardText}
-                            value={values.name}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="email"
-                            name="email"
-                            label="Email"
-                            className={classes.newCardText}
-                            value={values.email}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="phoneNumber"
-                            label="Phone Number"
-                            className={classes.newCardText}
-                            value={values.phoneNumber}
-                            onChange={handleChange}
-                          />
-                        </Grid>
+                    userId: currentUser.uid,
+                    streetAddress2: '',
+                    directions: '',
+                    stayLimit: '',
+                  },
+                }
+                
+                handleSaveParkData(params);
+                // console.log(values)
+              }}
+            >
+              {({
+                values,
+                errors,
+                touched,
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                setFieldTouched,
+                setFieldValue,
+                isSubmitting,
+              }) => {
+                return (
+                  <form className={classes.root} onSubmit={handleSubmit}>
+                    <Grid container spacing={CELL_SPACING}>
+                      <Grid item xs={6} className={classes.newCardCell}>
+                        <TextField
+                          name="name"
+                          label="Card Name"
+                          className={classes.newCardText}
+                          value={values.name}
+                          onChange={handleChange}
+                        />
                       </Grid>
-                      <Grid container spacing={CELL_SPACING}>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="streetAddress"
-                            label="Street Address"
-                            className={classes.newCardText}
-                            value = {values.streetAddress}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="city"
-                            label="City"
-                            className={classes.newCardText}
-                            value = {values.city}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="state"
-                            label="State"
-                            className={classes.newCardText}
-                            value={values.state}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="zipCode"
-                            label="Zip Code"
-                            className={classes.newCardText}
-                            value = {values.zipCode}
-                            onChange={handleChange}
-                          />
-                        </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="email"
+                          label="Email"
+                          className={classes.newCardText}
+                          value={values.email}
+                          onChange={handleChange}
+                        />
                       </Grid>
-                      <Grid container spacing={CELL_SPACING}>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="lat"
-                            label="Lat"
-                            className={classes.newCardText}
-                            value={values.lat}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="long"
-                            label="Long"
-                            className={classes.newCardText}
-                            value = {values.long}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="website"
-                            label="Website"
-                            className={classes.newCardText}
-                            value={values.website}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="origin"
-                            label="Origin"
-                            className={classes.newCardText}
-                            value={values.origin}
-                            onChange={handleChange}
-                          />
-                        </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="phoneNumber"
+                          label="Phone Number"
+                          className={classes.newCardText}
+                          value={values.phoneNumber}
+                          onChange={handleChange}
+                        />
                       </Grid>
-                      <Grid container spacing={CELL_SPACING}>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="id"
-                            label="ID"
-                            className={classes.newCardText}
-                            inputProps={{
-                              readOnly: true,
-                            }}
-                            value={values.id}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="type"
-                            label="Type"
-                            className={classes.newCardText}
-                            value={values.type}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="hoursOfOperation"
-                            label="Hours Of Operation"
-                            className={classes.newCardText}
-                            value={values.hoursOfOperation}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs className={classes.newCardCell}>
-                          <TextField
-                            id="acres"
-                            label="Acres"
-                            className={classes.newCardText}
-                            value={values.acres}
-                            onChange={handleChange}
-                          />
-                        </Grid>
+                    </Grid>
+                    <Grid container spacing={CELL_SPACING}>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="streetAddress"
+                          label="Street Address"
+                          className={classes.newCardText}
+                          value={values.streetAddress}
+                          onChange={handleChange}
+                        />
                       </Grid>
-                      <Grid container spacing={CELL_SPACING}>
-                        <Grid item xs={6} className={classes.newCardCell}>
-                          <TextField
-                            id="description"
-                            label="Description"
-                            className={classes.newCardText}
-                            multiline
-                            rows={6}
-                            value={values.description}
-                            onChange={handleChange}
-                          />
-                        </Grid>
-                        <Grid item xs={6} className={classes.parktags}>
-                            <InputLabel className={classes.label}>Park Tags</InputLabel>
-                           <ParkTagSelect tags = {selectedTags} onChange={handleChangeTags}/>
-                        </Grid>
-                        <Grid item xs={12} className={classes.submit}>
-                          <Button
-                            type="submit"
-                            color="primary"
-                            variant="outlined"
-                            onClick={onSubmit}
-                          >
-                            {isNew ? 'Add' : 'Save'}
-                          </Button>
-                        </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="city"
+                          label="City"
+                          className={classes.newCardText}
+                          value={values.city}
+                          onChange={handleChange}
+                        />
                       </Grid>
-                </form>
-              )
-            }}
-          </Formik>
-        </div>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="state"
+                          label="State"
+                          className={classes.newCardText}
+                          value={values.state}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="zipCode"
+                          label="Zip Code"
+                          className={classes.newCardText}
+                          value={values.zipCode}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={CELL_SPACING}>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="lat"
+                          label="Lat"
+                          className={classes.newCardText}
+                          value={values.lat}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="long"
+                          label="Long"
+                          className={classes.newCardText}
+                          value={values.long}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="website"
+                          label="Website"
+                          className={classes.newCardText}
+                          value={values.website}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="origin"
+                          label="Origin"
+                          className={classes.newCardText}
+                          value={values.origin}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={CELL_SPACING}>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="id"
+                          label="ID"
+                          className={classes.newCardText}
+                          inputProps={{
+                            readOnly: true,
+                          }}
+                          // value={parkData.id || ''}
+                          value={values.id}
+                        />
+                      </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="type"
+                          label="Type"
+                          className={classes.newCardText}
+                          value={values.type}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="hoursOfOperation"
+                          label="Hours Of Operation"
+                          className={classes.newCardText}
+                          value={values.hoursOfOperation}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid item xs className={classes.newCardCell}>
+                        <TextField
+                          name="acres"
+                          label="Acres"
+                          className={classes.newCardText}
+                          value={values.acres}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={CELL_SPACING}>
+                      <Grid item xs={6} className={classes.newCardCell}>
+                        <TextField
+                          name="description"
+                          label="Description"
+                          className={classes.newCardText}
+                          multiline
+                          rows={6}
+                          value={values.description}
+                          onChange={handleChange}
+                        />
+                      </Grid>
+                      <Grid item xs={6} className={classes.parktags}>
+                        <InputLabel className={classes.label}>Park Tags</InputLabel>
+                        <ParkTagSelect tags={values.tags} onChange={(value)=>{
+                          setFieldValue('tags',value)
+                        }} />
+                      </Grid>
+                      <Grid item xs={12} className={classes.submit}>
+                        <Button
+                          type="submit"
+                          color="primary"
+                          variant="outlined"
+                          onClick={onSubmit}
+                        >
+                          {isNew ? 'Add' : 'Save'}
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </form>
+                )
+              }}
+            </Formik>
+          </div>
         </TabPanel>
-        <TabPanel value='1' hidden={(value==1) ? false : true}>
+        <TabPanel value="1" hidden={value == 1 ? false : true}>
           <div className={classes.newCardRoot}>
-          
-          <Grid container spacing={CELL_SPACING}>
-              <Grid item xs={12} className={classes.newCardCell}>
+          <div className={classes.cardgroup}>
+            <Grid container spacing={3} noWrap>
               {parkInfo.photos?.map(item => (
-                <Card  onClick={(e)=>{setPhotoItem(item)}} 
-                  className={item.id == photoItem.id ? `${classes.cardAction} ${classes.cards}` :classes.cards} 
+              <Grid item sm={6} md={3} lg={2} xs={2} xl={2} noWrap>
+                <Card  onClick={(e)=>changeSelectImg({el:e.target,item})} 
+                  className={classes.oneImageDiv} 
                   key={item.id}
                 >
                   <CardActionArea >
                     <CardMedia
                       component="img"
-                      alt="Contemplative Reptile"
-                      height="140"
-                      image={item.photoUrl}
-                      title={item.cardName}
+                      alt=""
+                      onError={(e) => handleImageError(e,item.photoUrl)} 
+                      image={FallbackImgHash[item.photoUrl]? FallbackImg : item.photoUrl}
+                      className={classes.oneImage}
                     />
                   </CardActionArea>
                 </Card>
+              </Grid>
               ))}
-              </Grid>
-          </Grid>          
-          <Grid container spacing={CELL_SPACING}>
-              <Grid item xs={10} className={classes.newCardCell}>
-                  <DropzoneArea
-                    acceptedFile={["image/png"]}
-                    filesLimit={5}
-                    onChange={handleImage}
-                    />
-              </Grid>
-          </Grid>
-          <Grid container spacing={CELL_SPACING}>
-              <div className={classes.photobuttons}>
-                <Button
-                      type="button"
-                      color="primary"
-                      variant="outlined"
-                      onClick={submitImage}
-                      className={classes.photosubmit}
-                    >
-                  SUBMIT
-                </Button>
-                
-                <Button
-                      type="button"
-                      color="primary"
-                      variant="outlined"
-                      onClick={delPhoto}
-                      className={classes.photosubmit}
-                    >
-                  DELETE
-                </Button>
-              </div>
-          </Grid>
-          
+            </Grid>
+          </div>
+              <DropzoneDialog
+                  open={openUploadModal}
+                  onSave={handleSavePhoto}
+                  // onChange={handleSavePhoto}
+                  acceptedFiles={['image/jpeg', 'image/png', 'image/bmp']}
+                  showPreviews={true}
+                  maxFileSize={5000000}
+                  filesLimit={1}
+                  onClose={()=>{setOpenUploadModal(false)}}
+                  previewGridClasses={{container:classes.dropzonePreviewContainer}}
+              />
+                    <div className={classes.photobuttons}>
+                      
+                      <Button
+                            type="button"
+                            color="primary"
+                            variant="outlined"
+                            className={classes.photosubmit}
+                            onClick={()=>setOpenUploadModal(true)}
+                          >
+                        ADD
+                      </Button>
+                      <Button
+                        type="button"
+                        color="primary"
+                        variant="outlined"
+                        className={classes.photosubmit}
+                        onClick={handleDeletePhoto}
+                      >
+                        DELETE
+                      </Button>
+                      </div>
         
         </div>
         </TabPanel>
@@ -563,13 +517,13 @@ const useStyles = makeStyles(theme => ({
   newCardRoot: {
     // width: '100%',
     flexGrow: 1,
+    minWidth:'70%',
     marginLeft: 30,
   },
   newCardCell: {
     display: 'flex',
     justifyContent: 'flex-start',
   },
-
   paper: {
     padding: theme.spacing(2),
     textAlign: 'center',
@@ -585,11 +539,8 @@ const useStyles = makeStyles(theme => ({
     padding: '1em',
     justifyContent: 'flex-start',
   },
-  cards: {
-    margin: '1em',
-    width: '10%',
-    minWidth: '150px',
-  },
+  
+
   panelgroup: {
     width: '95%',
   },
@@ -599,24 +550,66 @@ const useStyles = makeStyles(theme => ({
   },
   photosubmit: {
     textAlign:'center',
-    marginLeft:'1em'
+    marginLeft:'1em',
+    fontSize:'1em'
   },
-  cardAction : {
-    border:'5px solid white',
-    outline:'5px solid grey',
-  },
+ 
   photobuttons : {
-    
     width:'40%',
     margin:'1em auto', 
-    position:'fixed',
+    position:'relative',
     bottom:'0',
     padding:'0.5em',
-    right:'15%',
-    left:'15%',
+    display:'flex',
+    justifyContent:'center'
   },
   //multiselect div
+  imageItem:{
+    display:'flex',
+    flex:'1',
+    flexDirection:"row",
+  },
+  oneImageDiv:{
+    transition: 'all .2s ease-in-out',
+    display:'flex',
+    position:'relative',
+    minWidth: '100%',
+    maxWidth:'100%',
+    width:'16%',
+    margin:'0 5px',
+    height:'160px'
+  },
   
+  imageAction:{
+    display:'none'
+  },
+  overLayImage:{
+    display:'block',
+    position:'absolute',
+    width:'100%',
+    top:'0',
+    left:'0',
+    maxHeight:'100%',
+    maxWidth:'100%',
+    width:'100%',
+    height:'100%',
+    background:'#767b727a'
+  },
+  oneImage:{
+    maxWidth:'100%',
+    width:'100%',
+    minWidth:'100%',
+    height:'100%'
+  },
+  cardAction : {
+    //transform:'scale(1.05)',
+     border:'5px solid #ae59e3',
+     borderRadius:'5px',  
+     outline:'5px solid grey',
+  },
+  dropzonePreviewContainer:{
+    width: '90%'
+  }
 }))
 
 export default ParkInfoModal

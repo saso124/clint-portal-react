@@ -17,7 +17,7 @@ export const useDashboardInfoByUser = (userId) =>{
           'Access-Control-Allow-Origin': '*',
         }
       });
-      console.log('fetchDashboardByUser',result.data);
+      // console.log('fetchDashboardByUser',result.data);
       setDashboardData(result.data);
     }catch(err){
       console.log('useGetParkByUser error',err);

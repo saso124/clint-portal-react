@@ -7,15 +7,21 @@ export default function ParkTagSelect({tags,onChange}) {
   const {selectOptions, fetchSelectOption} = useSelectOptionsByKeyword();
 
   useEffect(()=>{
-    console.log('ParkTagSelect tags',tags);
-      setTagList(tags);
+    // console.log('ParkTagSelect tags',tags);
+    if(tags == null)
+      setTagList([]);
+    else
+      setTagList([...tags]);
   },[tags]);
 
   useEffect(()=>{
       if(selectOptions.length != 0){
         const temparySelect = selectOptions.map((item)=>({value:item.id,label:item.amenity}));
-        const tempSelectOption = temparySelect.filter((item)=>(!tags.includes(item)));
-        setTagList([...tags,...tempSelectOption]);
+        const tempSelectOption = temparySelect.filter((item)=>(tags?!tags.includes(item) : true));
+        if(tags)
+          setTagList([...tags,...tempSelectOption]);
+        else
+          setTagList([...tempSelectOption]);
       }
   },[selectOptions])
 
@@ -25,8 +31,8 @@ export default function ParkTagSelect({tags,onChange}) {
     const inputValue = newValue.replace(/\W/g, '');
     fetchSelectOption(inputValue);
   };
-  const handleSelectedTag = async (newValue,actionMeta)=>{
-    onChange(newValue);
+  const handleSelectedTag = (newValue,actionMeta)=>{
+    onChange([...newValue]);
   }
   return (
     <div style={{width:"100%"}}>

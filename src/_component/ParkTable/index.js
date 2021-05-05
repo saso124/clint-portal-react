@@ -70,7 +70,7 @@ const ParkTable = props => {
   const [itemId, setitemId] = useState(0);
   const [isNew,setIsNew] = useState(false);
 
-  console.log('user id',currentUser.uid)
+ // console.log('user id',currentUser.uid)
   const {parkData,fetchParkDataByUser} = useGetParkByUser(currentUser.uid);
 
   useEffect(()=>{
@@ -78,7 +78,7 @@ const ParkTable = props => {
   },[parkData]);
 
   const onNewCard = () =>{
-    console.log('onNewCard');
+    // console.log('onNewCard');
     setIsNew(true);
     setOpen(true);
   }
@@ -124,8 +124,8 @@ const ParkTable = props => {
         open={open}
         onClose={handleClose}
         isNew={isNew}
-        itemId={itemId}
-        
+        itemId={isNew ? 0 : itemId}
+        onUpdated={fetchParkDataByUser}        
       />
     </>
   )
